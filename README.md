@@ -1,12 +1,73 @@
+<div align="center">
+
+<img src="docs/images/cover.jpg" alt="VITRA homescreen — the ten reagent pads as orbs inside a glass RGB colour cube" width="100%" />
+
 # VITRA
 
-Computer-vision platform for **KJS-HC-03: Urine Test Strip Reader using Colorimetry as a Point-of-Care Technology** (K J Somaiya School of Engineering).
+**Turn reagent colours into measurable data.**
 
-A Raspberry Pi 5 and camera sit in a light-controlled enclosure and photograph a 10-pad reagent strip after the 120 s reaction. OpenCV isolates the pads and extracts colour features, and a calibrated regression maps the 30-D RGB vector to per-analyte estimates. A clinician then reviews the structured report.
+A computer-vision research platform for **KJS-HC-03 — Urine Test Strip Reader using Colorimetry as a Point-of-Care Technology**<br/>K J Somaiya School of Engineering
 
-**Live demo:** https://vitra-lab.vercel.app — temporary demo database; use the one-click demo accounts on the sign-in page.
+[![Live demo](https://img.shields.io/badge/live%20demo-vitra--lab.vercel.app-c9a96e?style=for-the-badge)](https://vitra-lab.vercel.app)
+&nbsp;
+![Status](https://img.shields.io/badge/status-research%20prototype-0d4c3c?style=for-the-badge)
+
+![Next.js](https://img.shields.io/badge/Next.js%2015-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React%2019-20232a?logo=react&logoColor=61dafb)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776ab?logo=python&logoColor=white)
+![OpenCV](https://img.shields.io/badge/OpenCV-5c3ee8?logo=opencv&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-f7931e?logo=scikitlearn&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169e1?logo=postgresql&logoColor=white)
+![WebGL](https://img.shields.io/badge/WebGL-990000?logo=webgl&logoColor=white)
+
+[Live demo](https://vitra-lab.vercel.app) · [How it works](#how-it-works) · [Screenshots](#screenshots) · [Run locally](#run-locally) · [Architecture](docs/architecture.md)
+
+</div>
 
 > **Research prototype. Not a medical device. Not clinically validated.** All bundled data, images and models are **SYNTHETIC**. Nothing here is a real patient sample, real reagent chemistry or a validated measurement. Collaborating organisations named in the use-case document do not endorse this software.
+
+## Why
+
+Urine dipsticks screen for diabetes, urinary tract infections, kidney and liver disorders — but they are read **by eye** against a printed chart: subjective, lighting-dependent and categorical. VITRA is the software for a sealed, LED-lit **Raspberry Pi 5** reader: it checks the photo, finds the ten pads, measures their colour, turns colour into numbers **only when a compatible calibration exists**, and routes every result to a clinician.
+
+| **10** | **120 s** | **30-D** | **1** |
+|:-:|:-:|:-:|:-:|
+| reagent pads | timed reaction | RGB feature vector | clinician signs off every run |
+
+## How it works
+
+```mermaid
+flowchart LR
+  A[Strip in sealed<br/>LED enclosure] -->|120 s reaction| B[Capture<br/>Pi camera / upload]
+  B --> C{9 quality checks}
+  C -->|fail| X[Invalid image<br/>nothing inferred]
+  C -->|pass| D[Localise strip<br/>segment 10 pads]
+  D --> E[RGB · LAB · HSV<br/>30-D vector]
+  E --> F{Compatible<br/>calibration?}
+  F -->|no| G[Calibration required]
+  F -->|yes| H[Regression<br/>value + interval]
+  G --> R[Clinician review]
+  H --> R
+  R --> P[PDF / JSON report<br/>audited]
+```
+
+## Screenshots
+
+| | |
+|:-:|:-:|
+| <img src="docs/images/reaction.jpg" alt="The reaction frame" /> | <img src="docs/images/whyhard.jpg" alt="Phone in room light vs sealed box" /> |
+| The reaction — pads develop over 120 s | Why a phone can't: room light vs. the sealed box |
+| <img src="docs/images/instrument.jpg" alt="Enclosure diagram" /> | <img src="docs/images/pipeline.jpg" alt="Pipeline as a film strip" /> |
+| The instrument — a box that removes the room | The pipeline, frame by frame |
+| <img src="docs/images/lab.jpg" alt="Live lab readout" /> | <img src="docs/images/governance.jpg" alt="Governance matrix" /> |
+| Live lab readout, counted from the database | Governance: the use case vs. what the code does |
+| <img src="docs/images/login.jpg" alt="Sign-in" /> | <img src="docs/images/console.jpg" alt="Analysis console" /> |
+| Sign-in with one-click demo accounts | Analysis console |
+| <img src="docs/images/result.jpg" alt="Result inspector" /> | <img src="docs/images/review.jpg" alt="Clinical review queue" /> |
+| Result inspector — quality, pads, states | Clinical review queue |
+
+**Try it:** open the [live demo](https://vitra-lab.vercel.app), click **Open Analysis Console**, and use a one-click demo account (Admin · Clinician · Operator · Researcher). The hosted demo database is temporary and resets on its own.
 
 ## Layout
 
@@ -151,8 +212,9 @@ The Python service cannot run on Vercel. Host it elsewhere (any container host) 
 - Simulated Vercel cold start (`VERCEL=1`, scratch `PGLITE_DIR`): the first `getDb()` migrated and seeded automatically. Concurrent first calls shared one bootstrap, and a warm restart skipped the seed.
 - Playwright `tests/e2e/smoke.spec.ts` against `next dev`: **4/4 passed**, covering `/`, `/methodology`, `/login` and, as admin, `/console`, `/analysis/new`, a seeded run, `/history`, `/samples`, `/review`, `/reports`, `/calibration`, `/model-lab`, `/devices` and `/settings`.
 
+- `next build` passes, and the app is deployed on Vercel at https://vitra-lab.vercel.app in the ephemeral demo mode: a cold start migrates and seeds automatically, and the live lab readout and demo sign-in work.
+
 Not verified here:
-- `next build` and a real Vercel deployment, including the file-tracing includes.
 - A managed PostgreSQL provider (Neon / Vercel Postgres) with TLS.
 - The CV pipeline on real (non-synthetic) strip photographs.
 
