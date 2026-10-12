@@ -4,6 +4,8 @@ Computer-vision platform for **KJS-HC-03: Urine Test Strip Reader using Colorime
 
 A Raspberry Pi 5 and camera sit in a light-controlled enclosure and photograph a 10-pad reagent strip after the 120 s reaction. OpenCV isolates the pads and extracts colour features, and a calibrated regression maps the 30-D RGB vector to per-analyte estimates. A clinician then reviews the structured report.
 
+**Live demo:** https://vitra-lab.vercel.app — temporary demo database; use the one-click demo accounts on the sign-in page.
+
 > **Research prototype. Not a medical device. Not clinically validated.** All bundled data, images and models are **SYNTHETIC**. Nothing here is a real patient sample, real reagent chemistry or a validated measurement. Collaborating organisations named in the use-case document do not endorse this software.
 
 ## Layout

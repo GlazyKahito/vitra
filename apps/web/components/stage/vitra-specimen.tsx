@@ -662,6 +662,7 @@ export default function VitraSpecimen({
     let time = 0
     let prog01 = -1
     let shownScene = -1
+    let lastExit = -1
 
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame)
@@ -673,6 +674,21 @@ export default function VitraSpecimen({
 
       const r = root.getBoundingClientRect()
       const p = progressFrom(r.top, r.height, H)
+
+      // Hand-off to the chapters: once the last frame has been read and the
+      // section starts to leave, the stage lingers (counter-scrolls), eases back
+      // and fades while the next chapter rises over it. Transform + opacity only.
+      const exit = L.reduced ? 0 : clamp01((H - r.bottom) / H)
+      const eq = Math.round(exit * 400) / 400
+      if (eq !== lastExit) {
+        lastExit = eq
+        const e = eq * eq * (3 - 2 * eq)
+        // gone by the time the next headline reaches the middle of the screen
+        const fade = smoothstep(0, 0.45, eq)
+        stage.style.transform = eq > 0 ? "translate3d(0," + (eq * H * 0.55).toFixed(1) + "px,0) scale(" + (1 - e * 0.08).toFixed(4) + ")" : ""
+        stage.style.opacity = eq > 0 ? (1 - fade).toFixed(3) : ""
+        stage.style.visibility = fade >= 0.999 ? "hidden" : ""
+      }
       prog01 = prog01 < 0 || L.reduced ? p : prog01 + (p - prog01) * (1 - Math.exp(-dt * 9))
       const coord = sceneCoord(prog01, SCENES, HOLD)
       const scene = Math.round(coord)
@@ -862,7 +878,7 @@ export default function VitraSpecimen({
   return (
     <section
       ref={rootRef}
-      className={"vts relative z-10 w-full " + className}
+      className={"vts relative z-0 w-full " + className}
       data-play={introDone ? "" : undefined}
       style={{ height: "calc(" + height + " * " + (1 + (SCENES - 1) * sceneScroll).toFixed(3) + ")" }}
       aria-label="VITRA — urine strip colorimetry, a research prototype"
@@ -871,7 +887,7 @@ export default function VitraSpecimen({
       <div
         ref={stageRef}
         className="lys-stage sticky top-0 w-full overflow-hidden select-none"
-        style={{ height, color: bone, ["--lys-red" as string]: crimson } as React.CSSProperties}
+        style={{ height, color: bone, willChange: "transform, opacity", ["--lys-red" as string]: crimson } as React.CSSProperties}
         onPointerOver={(e) => {
           const g = (e.target as HTMLElement).closest<HTMLElement>("[data-g]")?.dataset.g
           if (g) setInspect(ANALYTES.find((a) => a.key === g) ?? null)
