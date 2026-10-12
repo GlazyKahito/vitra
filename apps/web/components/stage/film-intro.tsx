@@ -42,7 +42,9 @@ const CSS =
   ".vi-trail{transform-origin:bottom;animation:vi-trail " + RISE_MS + "ms cubic-bezier(.45,0,.15,1) both;will-change:transform}" +
   ".vi-in{animation:vi-in .7s cubic-bezier(.16,1,.3,1) both}" +
   ".vi-led{animation:vi-breathe 1.6s ease-in-out infinite}" +
-  ".vi-flare{transition:transform .9s cubic-bezier(.16,1,.3,1),opacity .7s ease .15s;will-change:transform,opacity}";
+  ".vi-flare{transition:transform .5s cubic-bezier(.16,1,.3,1),opacity .35s ease;will-change:transform,opacity}" +
+  "@keyframes vi-burst{0%{transform:scale(.02);opacity:0}18%{opacity:1}100%{transform:scale(1);opacity:0}}" +
+  ".vi-burst{animation:vi-burst .95s cubic-bezier(.16,1,.3,1) both;will-change:transform,opacity}";
 
 /**
  * The opening, after Ember's (github.com/GlazyKahito/ember-glazy): one LED
@@ -150,7 +152,7 @@ export function FilmIntro() {
           <span
             className="vi-flare absolute left-[-6px] top-[-6px] block size-3 rounded-full"
             style={{
-              transform: flare ? "scale(90)" : "scale(1)",
+              transform: flare ? "scale(2.5)" : "scale(1)",
               opacity: flare ? 0 : 1,
               background: "radial-gradient(circle, #fffaf0 0%, #f6ecd2 35%, #c9a96e 70%, transparent 72%)",
               boxShadow: "0 0 18px 6px rgba(235,218,176,0.5), 0 0 70px 22px rgba(201,169,110,0.2)",
@@ -158,6 +160,20 @@ export function FilmIntro() {
           >
             {!flare && <span className="vi-led absolute inset-0 rounded-full" style={{ boxShadow: "0 0 26px 8px rgba(235,218,176,0.35)" }} />}
           </span>
+          {/* the LEDs coming on: a pre-drawn light that only scales and fades (no repaint) */}
+          {flare && (
+            <span
+              aria-hidden
+              className="vi-burst pointer-events-none absolute block rounded-full"
+              style={{
+                left: "-80vmax",
+                top: "-80vmax",
+                width: "160vmax",
+                height: "160vmax",
+                background: "radial-gradient(circle, rgba(255,250,240,0.95) 0%, rgba(246,236,210,0.6) 12%, rgba(201,169,110,0.22) 30%, transparent 60%)",
+              }}
+            />
+          )}
           <span
             className="t-serif absolute left-6 top-0 flex -translate-y-[62%] items-start gap-1 text-[clamp(3rem,6vw,5.4rem)] italic leading-none text-[#f2ebdd] transition-opacity duration-200"
             style={{ opacity: flare ? 0 : 1 }}

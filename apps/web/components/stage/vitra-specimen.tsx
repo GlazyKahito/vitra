@@ -426,7 +426,7 @@ const CSS =
   ".lys-stage{container-type:size;container-name:lys}" +
   ".lys-char{display:inline-block;animation:lys-in 1.5s cubic-bezier(.2,.8,.2,1) both}" +
   ".vts:not([data-play]) .lys-char{animation-play-state:paused}" +
-  "@keyframes lys-in{from{opacity:0;transform:translateY(0.35em) rotate(4deg);filter:blur(14px)}to{opacity:1;transform:none;filter:blur(0)}}" +
+  "@keyframes lys-in{from{opacity:0;transform:translateY(0.35em) rotate(4deg)}to{opacity:1;transform:none}}" +
   ".lys-g{display:inline-block;transition:color .25s,transform .35s cubic-bezier(.2,.8,.2,1);cursor:default}" +
   ".lys-g:hover{color:var(--lys-red);transform:translateX(0.08em)}" +
   ".lys-nav button{display:flex;align-items:center;gap:10px;justify-content:flex-end;background:none;border:0;padding:5px 0;cursor:pointer;color:inherit;font:inherit}" +
@@ -780,7 +780,6 @@ export default function VitraSpecimen({
           s.transform = "translateY(" + ((1 - q) * 0.4 * dir).toFixed(3) + "em)"
         } else {
           s.transform = "translateY(" + ((1 - q) * 34 * dir).toFixed(1) + "px)"
-          s.filter = q > 0.995 ? "" : "blur(" + ((1 - q) * 8).toFixed(1) + "px)"
         }
       }
 
@@ -803,7 +802,7 @@ export default function VitraSpecimen({
           const o = coord < 1 ? 1 : 1 - smoothstep(0.1, 0.45, out)
           c.style.transform = "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px)"
           c.style.opacity = String(o)
-          c.style.filter = still || out < 0.05 ? "" : "blur(" + (out * 14).toFixed(1) + "px)"
+          c.style.filter = ""
         } else {
           const dx = (W / 2 - n0.x) * m * 0.75
           const dy = (cy1 - n0.y) * m
@@ -812,7 +811,7 @@ export default function VitraSpecimen({
             ? ""
             : "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px) scale(" + (1 - m * 0.7).toFixed(3) + ")"
           c.style.opacity = String(o)
-          c.style.filter = still || m < 0.02 ? "" : "blur(" + (m * 12).toFixed(1) + "px)"
+          c.style.filter = ""
         }
         c.style.visibility = coord > 1.6 ? "hidden" : ""
       })
