@@ -1,0 +1,9 @@
+*.zip
+VITRA-HANDOFF.md
+HANDOFF.md
+docs/BUILD-CONTEXT.md
+services/
+**/node_modules
+**/.next
+**/.data
+**/storage
