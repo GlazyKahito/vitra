@@ -2,10 +2,7 @@
 
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Children, useEffect, useState, type ReactNode } from "react";
-import { useStage } from "./smooth-scroll";
-
-/** Wait for the intro's fade to finish before doing any heavy work. */
-const START_DELAY_MS = 1100;
+import { markReady } from "./film-intro";
 
 type IdleWindow = Window & {
   requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
@@ -13,35 +10,35 @@ type IdleWindow = Window & {
 };
 
 /**
- * Mounts the chapters below the cover only after the opening has fully faded,
- * and then one chapter per idle slot, so the hand-off from the intro to the
- * homescreen never stalls on hydrating ten animated sections at once. A spacer
- * holds the scroll length for the chapters still to come.
+ * Builds the chapters below the cover one per idle slot WHILE the intro is
+ * still on screen — its LED climb is a compositor animation, so it stays smooth
+ * while the page assembles underneath. The intro waits for this ("chapters"
+ * ready step) before it opens, so nothing heavy is left to do afterwards.
+ * A spacer holds the scroll length for chapters still to come.
  */
 export function AfterIntro({ children }: { children: ReactNode }) {
-  const { introDone } = useStage();
   const items = Children.toArray(children);
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (!introDone || count >= items.length) return;
+    if (count >= items.length) return;
     const w = window as IdleWindow;
-    let idle = 0;
-    const next = () => {
-      if (w.requestIdleCallback) idle = w.requestIdleCallback(() => setCount((c) => c + 1), { timeout: 400 });
-      else idle = window.setTimeout(() => setCount((c) => c + 1), 60);
-    };
-    const t = window.setTimeout(next, count === 0 ? START_DELAY_MS : 0);
+    let id = 0;
+    if (w.requestIdleCallback) id = w.requestIdleCallback(() => setCount((c) => c + 1), { timeout: 160 });
+    else id = window.setTimeout(() => setCount((c) => c + 1), 16);
     return () => {
-      window.clearTimeout(t);
-      if (w.cancelIdleCallback) w.cancelIdleCallback(idle);
-      else window.clearTimeout(idle);
+      if (w.cancelIdleCallback) w.cancelIdleCallback(id);
+      else window.clearTimeout(id);
     };
-  }, [introDone, count, items.length]);
+  }, [count, items.length]);
 
-  // once everything is in place, measure every pinned section against the final layout
+  // everything in place: measure every pinned section against the final layout, then let the intro open
   useEffect(() => {
-    if (count === items.length && count > 0) requestAnimationFrame(() => ScrollTrigger.refresh());
+    if (count !== items.length) return;
+    requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+      markReady("chapters");
+    });
   }, [count, items.length]);
 
   return (

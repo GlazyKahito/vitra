@@ -111,7 +111,7 @@ const toRgb = (hex: string): [number, number, number] => {
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 };
 
-export function SilkWaves({ scale = 0.5 }: { scale?: number }) {
+export function SilkWaves({ scale = 0.42 }: { scale?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {

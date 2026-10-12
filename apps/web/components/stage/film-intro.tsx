@@ -7,11 +7,11 @@ const SEEN_KEY = "vitra.intro.seen";
 /** How long the LED takes to climb. Pure CSS, so it runs on the compositor. */
 const RISE_MS = 1700;
 /** Give up waiting on a slow device and open anyway. */
-const GIVE_UP_MS = 4500;
+const GIVE_UP_MS = 6000;
 const FLARE_MS = 700;
 
 /** What the counter waits for, and how much of the bar each one is worth. */
-const WEIGHTS = { fonts: 0.4, bg: 0.25, stage: 0.35 } as const;
+const WEIGHTS = { fonts: 0.25, bg: 0.15, stage: 0.25, chapters: 0.35 } as const;
 export type ReadyStep = keyof typeof WEIGHTS;
 
 declare global {
@@ -104,7 +104,7 @@ export function FilmIntro() {
       if (pct !== lastPct) {
         lastPct = pct;
         if (countRef.current) countRef.current.textContent = String(pct).padStart(2, "0");
-        if (labelRef.current) labelRef.current.textContent = pct < 40 ? "Setting the type" : pct < 75 ? "Warming the LEDs" : pct < 100 ? "Calibrating the camera" : "Lights on";
+        if (labelRef.current) labelRef.current.textContent = pct < 30 ? "Setting the type" : pct < 60 ? "Warming the LEDs" : pct < 100 ? "Calibrating the camera" : "Lights on";
       }
       if (pct >= 100) {
         end(false);

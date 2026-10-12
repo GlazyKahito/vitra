@@ -593,7 +593,7 @@ export default function VitraSpecimen({
       const sr = stage.getBoundingClientRect()
       W = Math.max(1, sr.width)
       H = Math.max(1, sr.height)
-      dpr = Math.min(window.devicePixelRatio || 1, 2)
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5)
       const cw = Math.round(W * dpr)
       const ch = Math.round(H * dpr)
       if (canvas.width !== cw || canvas.height !== ch) {
