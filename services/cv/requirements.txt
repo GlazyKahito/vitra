@@ -1,0 +1,16 @@
+# VITRA CV service. The code imports only starlette + pydantic (no fastapi
+# import), but fastapi is listed so a local `pip install -r` gives the same
+# starlette/pydantic stack the web team expects.
+fastapi>=0.110
+starlette>=0.36
+pydantic>=2.5
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+opencv-python-headless>=4.9
+numpy>=1.26
+pandas>=2.1
+scikit-learn>=1.4
+scipy>=1.11
+scikit-image>=0.22
+pillow>=10
+joblib>=1.3

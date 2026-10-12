@@ -1,0 +1,19 @@
+node_modules/
+.next/
+.vercel/
+.data/
+storage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+
+# local archives
+*.zip
+VITRA-HANDOFF.md
+HANDOFF.md
+docs/BUILD-CONTEXT.md

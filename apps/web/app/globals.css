@@ -1,0 +1,368 @@
+@import "tailwindcss";
+
+/* ───────────────────────────────────────────────────────────────────────────
+   VITRA design system — "instrument" theme
+   Graphite surfaces, a single cyan signal colour, warm amber notice, hairline
+   borders. Desktop-first (≥1280px).
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+  --font-sans: "Inter", "SF Pro Display", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, monospace;
+
+  --color-ink-0: #060607; /* page */
+  --color-ink-1: #0b0c0e; /* raised */
+  --color-ink-2: #121316; /* panel */
+  --color-ink-3: #1a1c20; /* panel hover / inset */
+  --color-ink-4: #24272c; /* border strong */
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+
+  --color-fg: #f2f3f5;
+  --color-fg-2: #b4b8c0;
+  --color-fg-3: #7d828c;
+  --color-fg-4: #4f535b;
+
+  --color-signal: #5fd4e6; /* cyan — the only "brand" colour */
+  --color-signal-2: #2aa9bd;
+  --color-signal-dim: rgba(95, 212, 230, 0.14);
+  --color-notice: #e8b55a; /* amber — warnings / experimental */
+  --color-notice-dim: rgba(232, 181, 90, 0.14);
+  --color-fault: #e06c6c; /* red — only for faults (invalid image, errors) — never for "abnormal" results */
+  --color-fault-dim: rgba(224, 108, 108, 0.14);
+  --color-neutral: #9aa0aa;
+
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 20px 60px -30px rgba(0, 0, 0, 0.8);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-ink-0);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-width: 1280px;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(95, 212, 230, 0.3);
+}
+
+/* Typography helpers */
+.t-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  font-weight: 600;
+}
+.t-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-fg-3);
+}
+.t-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.t-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Surfaces */
+.panel {
+  background: var(--color-ink-2);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+}
+.panel-inset {
+  background: var(--color-ink-1);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+}
+.hairline {
+  border-color: var(--color-line);
+}
+
+/* Instrument grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+
+/* Focus */
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-4) transparent;
+}
+
+/* Film-grain overlay for the landing page */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: screen;
+}
+
+/* Tables */
+.table-instrument {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+.table-instrument th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-fg-3);
+  font-weight: 500;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-line-strong);
+  white-space: nowrap;
+}
+.table-instrument td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: middle;
+  color: var(--color-fg-2);
+}
+.table-instrument tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.025);
+}
+.table-instrument tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Reduced motion: GSAP / Motion components check this too, but kill CSS loops */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.pulse-dot {
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+@keyframes scan {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+.scanline {
+  animation: scan 2.4s linear infinite;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   landing — vintage film
+   Cream + amber are used ONLY for typography and film effects. Instrument
+   visuals stay cyan. Everything here is additive; tokens above are untouched.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --film-cream: #efe7d6;
+  --film-cream-dim: rgba(239, 231, 214, 0.55);
+  --film-amber: #d9a24a;
+  --film-burn: #ff9a3c;
+  --film-burn-hot: #ffe3b8;
+}
+
+.t-serif {
+  font-family: var(--font-serif), "Instrument Serif", Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 0.96;
+  color: var(--film-cream);
+}
+.t-serif em,
+.t-serif i {
+  font-style: italic;
+}
+.t-smallcaps {
+  font-family: var(--font-mono);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.1em;
+}
+
+/* A hairline amber rule with a soft brass sheen */
+.film-rule {
+  height: 1px;
+  background: linear-gradient(90deg, var(--film-amber) 0%, rgba(217, 162, 74, 0.35) 60%, transparent 100%);
+}
+.film-rule-double {
+  position: relative;
+  height: 5px;
+  border-top: 1px solid var(--film-cream-dim);
+  border-bottom: 1px solid var(--film-cream-dim);
+}
+/* clapperboard stripes for chapter slates */
+.film-clapper {
+  height: 6px;
+  background: repeating-linear-gradient(135deg, var(--film-cream) 0 6px, transparent 6px 14px);
+  opacity: 0.55;
+}
+
+/* Fixed texture layer */
+.film-vignette {
+  background: radial-gradient(ellipse at center, transparent 52%, rgba(0, 0, 0, 0.38) 88%, rgba(0, 0, 0, 0.6) 100%);
+}
+.film-scratch {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--film-cream);
+  opacity: 0;
+}
+.film-scratch.is-on {
+  animation: film-scratch 80ms linear 1;
+}
+@keyframes film-scratch {
+  0% { opacity: 0; }
+  15% { opacity: 0.55; }
+  60% { opacity: 0.35; }
+  100% { opacity: 0; }
+}
+
+/* Projector flicker — tiny luminance jitter, stepped so it reads as frames */
+@keyframes film-flicker {
+  0% { opacity: 1; }
+  25% { opacity: 0.93; }
+  50% { opacity: 0.985; }
+  75% { opacity: 0.9; }
+  100% { opacity: 1; }
+}
+.film-flicker {
+  animation: film-flicker 0.32s steps(2, end) infinite;
+}
+
+/* Sprocket holes scrolling down a gutter */
+@keyframes film-sprocket {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+.film-sprocket-run {
+  animation: film-sprocket 1.1s linear infinite;
+}
+
+/* Film gate (the hero's projector frame) */
+.film-gate {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    0 0 0 1px rgba(239, 231, 214, 0.1),
+    0 0 0 6px rgba(6, 6, 7, 1),
+    0 0 0 7px rgba(239, 231, 214, 0.06),
+    0 40px 90px -40px rgba(0, 0, 0, 0.9);
+}
+.film-gate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 58%, rgba(0, 0, 0, 0.55) 100%);
+}
+@keyframes film-scan {
+  from { background-position: 0 0; }
+  to { background-position: 0 24px; }
+}
+.film-scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 3px);
+  background-size: 100% 24px;
+  animation: film-scan 1.6s linear infinite;
+  mix-blend-mode: overlay;
+}
+
+/* Word mask reveal for the hero headline */
+.word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.word-mask > span {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Light leak blob: warm radial, screen-blended, low opacity */
+.film-leak {
+  position: absolute;
+  pointer-events: none;
+  width: 70vw;
+  height: 70vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 154, 60, 0.55) 0%, rgba(217, 162, 74, 0.25) 30%, rgba(255, 120, 40, 0.08) 55%, transparent 70%);
+  mix-blend-mode: screen;
+  filter: blur(18px);
+}
+
+/* Iris mask: transparent hole grows from the centre (driven by --hole) */
+.film-iris {
+  --hole: 0%;
+  mask-image: radial-gradient(circle at 50% 50%, transparent var(--hole), black calc(var(--hole) + 10%));
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--hole), black calc(var(--hole) + 10%));
+}
+
+/* Tail-leader flash to white */
+@keyframes film-tail-flash {
+  0% { background-color: var(--color-ink-0); }
+  20% { background-color: var(--film-cream); }
+  30% { background-color: var(--color-ink-0); }
+  45% { background-color: var(--film-cream); }
+  55% { background-color: #e8dcc4; }
+  70% { background-color: var(--film-cream); }
+  100% { background-color: var(--film-cream); }
+}
+.film-tail.is-on {
+  animation: film-tail-flash 0.9s steps(1, end) 1 forwards;
+}
