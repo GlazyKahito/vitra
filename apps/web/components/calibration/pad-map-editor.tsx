@@ -179,7 +179,7 @@ export function PadMapEditor({ product, canEdit }: PadMapEditorProps) {
 
       <div className="flex items-center justify-between gap-3">
         <p className={msg ? (msg.tone === "ok" ? "text-[12px] text-fg-3" : "text-[12px] text-fault") : "text-[12px] text-fg-4"} aria-live="polite">
-          {msg ? msg.text : !canEdit ? "Read-only: saving the pad map requires settings.manage." : filled < SLOTS ? `Map all ${SLOTS} pads to save (${SLOTS - filled} unused).` : "Pad order is left → right with the handle on the left."}
+          {msg ? msg.text : !canEdit ? "Read-only: saving the pad map requires calibration.manage." : filled < SLOTS ? `Map all ${SLOTS} pads to save (${SLOTS - filled} unused).` : "Pad order is left → right with the handle on the left."}
         </p>
         <Button size="sm" onClick={save} loading={pending} disabled={!canEdit || !dirty || !geo.ok || !reactionOk || !mapOk}>
           Save pad map

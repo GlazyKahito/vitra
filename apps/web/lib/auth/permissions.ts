@@ -26,7 +26,7 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "reviews.write": "Record clinical review decisions.",
   "reports.generate": "Generate PDF / JSON reports.",
   "reports.read": "Download generated reports.",
-  "calibration.manage": "Import datasets, train and retire calibration models.",
+  "calibration.manage": "Import datasets, train and retire calibration models, edit strip pad maps.",
   "models.validate": "Mark a calibration model as validated (requires evidence).",
   "devices.manage": "Rotate device keys, simulate device events.",
   "settings.manage": "Change application settings.",

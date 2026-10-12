@@ -37,8 +37,8 @@ export function Sparkline({ values, width = 96, height = 24, tone = "signal", en
   const color = TONE_COLOR[tone];
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={ariaLabel ?? "Trend"} className="block overflow-visible">
-      <path d={d.trim()} fill="none" stroke={color} strokeWidth={1.25} strokeLinejoin="round" />
-      {endDot && last !== null ? <circle cx={last.x} cy={last.y} r={2} fill={color} /> : null}
+      <path d={d.trim()} className="ws-draw" pathLength={1} fill="none" stroke={color} strokeWidth={1.25} strokeLinejoin="round" />
+      {endDot && last !== null ? <circle className="ws-dot" cx={last.x} cy={last.y} r={2} fill={color} /> : null}
     </svg>
   );
 }

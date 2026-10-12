@@ -1,7 +1,7 @@
 import "server-only";
 import { and, desc, eq, ilike, or, type SQL } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { analysisRuns, reports, samples } from "@/db/schema";
+import { analysisRuns, reports, samples, users } from "@/db/schema";
 import { newId } from "@/lib/ids";
 import { safeJoin, writeFile } from "@/lib/storage";
 import { recordAudit } from "@/lib/data/audit";
@@ -11,7 +11,10 @@ import { renderReportJson } from "@/lib/reports/json";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import type { Report, Run, SafeUser, Sample } from "@/lib/data/contract";
 
-export async function listReports(filter: { q?: string; format?: "pdf" | "json" | "all" } = {}): Promise<(Report & { run: Run; sample: Sample })[]> {
+export type ReportListItem = Report & { run: Run; sample: Sample; generatedByLabel: string | null };
+
+/** Reports newest first, with run, sample and the generating user's display name (null for system/device). */
+export async function listReports(filter: { q?: string; format?: "pdf" | "json" | "all" } = {}): Promise<ReportListItem[]> {
   const db = await getDb();
   const conds: SQL[] = [];
   if (filter.format && filter.format !== "all") conds.push(eq(reports.format, filter.format));
@@ -20,14 +23,15 @@ export async function listReports(filter: { q?: string; format?: "pdf" | "json" 
     conds.push(or(ilike(analysisRuns.runCode, like), ilike(samples.sampleCode, like), ilike(samples.subjectPseudonym, like))!);
   }
   const rows = await db
-    .select({ report: reports, run: analysisRuns, sample: samples })
+    .select({ report: reports, run: analysisRuns, sample: samples, generatedByLabel: users.displayName })
     .from(reports)
     .innerJoin(analysisRuns, eq(analysisRuns.id, reports.runId))
     .innerJoin(samples, eq(samples.id, analysisRuns.sampleId))
+    .leftJoin(users, eq(users.id, reports.generatedById))
     .where(conds.length ? and(...conds) : undefined)
     .orderBy(desc(reports.createdAt))
     .limit(300);
-  return rows.map((r) => ({ ...r.report, run: r.run, sample: r.sample }));
+  return rows.map((r) => ({ ...r.report, run: r.run, sample: r.sample, generatedByLabel: r.generatedByLabel ?? null }));
 }
 
 export async function generateReport(runId: string, format: "pdf" | "json", actor: SafeUser): Promise<Report> {

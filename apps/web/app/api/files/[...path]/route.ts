@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import { NextResponse, type NextRequest } from "next/server";
 import { requireApiUser, ForbiddenError, UnauthenticatedError } from "@/lib/auth";
-import { contentTypeFor, safeJoin, StoragePathError } from "@/lib/storage";
+import { bundledFixturePath, contentTypeFor, safeJoin, StoragePathError } from "@/lib/storage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,7 +26,11 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ path: stri
     throw err;
   }
   try {
-    const data = await fs.readFile(abs);
+    const fallback = bundledFixturePath(rel);
+    const data = await fs.readFile(abs).catch((err: unknown) => {
+      if (fallback) return fs.readFile(fallback);
+      throw err;
+    });
     return new Response(new Uint8Array(data), {
       status: 200,
       headers: {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { Report, Run, Sample } from "@/lib/data/contract";
 import { Chip } from "@/components/ui/chip";
 import { SyntheticTag } from "@/components/common/synthetic-tag";
@@ -13,7 +14,7 @@ function bytes(n: number): string {
 }
 
 export function ReportsTable({ reports, canDownload }: { reports: ReportRow[]; canDownload: boolean }) {
-  if (reports.length === 0) return <p className="px-5 py-8 text-[12.5px] text-fg-4">No reports match. Generate one from a run below.</p>;
+  if (reports.length === 0) return <EmptyState className="py-12" title="No reports match." description="Generate one from a run below." />;
   return (
     <table className="table-instrument">
       <thead>

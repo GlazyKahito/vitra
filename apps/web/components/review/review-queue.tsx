@@ -46,7 +46,7 @@ export function ReviewQueue({ items, tab, counts, canReview, initialRunId }: { i
       <div className="flex items-center justify-between border-b border-line px-5">
         <div className="flex gap-1" role="tablist">
           {TABS.map((t) => (
-            <button key={t.key} role="tab" aria-selected={tab === t.key} onClick={() => setParam("status", t.key === "pending_review" ? null : t.key)} className={cn("-mb-px flex h-11 items-center gap-2 border-b-2 px-3 text-[13px]", tab === t.key ? "border-signal text-fg" : "border-transparent text-fg-3 hover:text-fg")}>
+            <button key={t.key} role="tab" aria-selected={tab === t.key} onClick={() => setParam("status", t.key === "pending_review" ? null : t.key)} className={cn("-mb-px flex h-11 items-center gap-2 border-b-2 px-3 text-[13px]", tab === t.key ? "border-[var(--lux-gold)] text-[var(--lux-ivory)]" : "border-transparent text-fg-3 hover:text-fg")}>
               {t.label}
               {counts[t.key] !== undefined ? <span className="t-mono text-[10.5px] text-fg-4">{counts[t.key]}</span> : null}
             </button>
@@ -59,7 +59,7 @@ export function ReviewQueue({ items, tab, counts, canReview, initialRunId }: { i
             setParam("q", typeof v === "string" && v.trim() ? v.trim() : null);
           }}
         >
-          <input name="q" defaultValue={params.get("q") ?? ""} placeholder="Run or sample…" aria-label="Search queue" className="h-8 w-52 rounded-[var(--radius-sm)] border border-line-strong bg-ink-1 px-3 font-mono text-[12px] text-fg placeholder:text-fg-4 focus:border-signal focus:outline-none" />
+          <input name="q" defaultValue={params.get("q") ?? ""} placeholder="Run or sample…" aria-label="Search queue" className="h-8 w-52 rounded-[var(--radius-sm)] border border-line-strong bg-ink-1 px-3 font-mono text-[12px] text-fg placeholder:text-fg-4 transition-[border-color,box-shadow] focus:border-[rgba(201,169,110,0.7)] focus:shadow-[0_0_0_3px_rgba(201,169,110,0.14)] focus:outline-none" />
         </form>
       </div>
 
@@ -69,26 +69,26 @@ export function ReviewQueue({ items, tab, counts, canReview, initialRunId }: { i
           <span className="text-[12px] text-fg-4">{tab === "pending_review" ? "No runs are waiting for review." : "No runs in this state."}</span>
         </div>
       ) : (
-        <ul className="divide-y divide-line">
+        <ul className="ws-rows divide-y divide-line">
           {items.map((it) => (
             <li key={it.runId}>
-              <button type="button" onClick={() => setOpenId(it.runId)} className={cn("grid w-full grid-cols-12 items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.025)]", openId === it.runId && "bg-[rgba(255,255,255,0.03)]")}>
-                <div className="col-span-2 flex items-center gap-2">
-                  <span className="t-mono text-[13px] text-fg">{it.runCode}</span>
+              <button type="button" onClick={() => setOpenId(it.runId)} className={cn("grid w-full grid-cols-[176px_124px_minmax(0,auto)_minmax(0,1fr)] items-center gap-x-6 gap-y-2.5 px-5 py-3.5 text-left transition-colors hover:bg-[rgba(201,169,110,0.035)]", openId === it.runId && "bg-[rgba(201,169,110,0.05)]")}>
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="t-mono whitespace-nowrap text-[13px] text-fg">{it.runCode}</span>
                   {it.synthetic ? <SyntheticTag /> : null}
                 </div>
-                <div className="col-span-2">
-                  <div className="t-mono text-[12px] text-fg-2">{it.sampleCode}</div>
+                <div className="min-w-0">
+                  <div className="t-mono whitespace-nowrap text-[12px] text-fg-2">{it.sampleCode}</div>
                   {it.subjectPseudonym ? <div className="text-[11px] text-fg-4">{it.subjectPseudonym}</div> : null}
                 </div>
-                <div className="col-span-2 flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <RunStatusChip status={it.status} />
                   <ModeTag mode={it.mode} />
                 </div>
-                <div className="col-span-2 text-[11.5px] text-fg-3" title={formatDateTime(it.waitingSince)}>
+                <div className="min-w-0 text-[11.5px] text-fg-3" title={formatDateTime(it.waitingSince)}>
                   {it.status === "pending_review" ? `waiting ${formatRelative(it.waitingSince)}` : it.latestReview ? `${it.latestReview.reviewerLabel} · ${formatRelative(it.latestReview.createdAt)}` : formatRelative(it.createdAt)}
                 </div>
-                <div className="col-span-4 flex flex-wrap items-center gap-1.5">
+                <div className="col-span-full flex min-w-0 flex-wrap items-center gap-1.5">
                   {it.criticalFlags.length > 0 ? <Chip tone="notice">critical analyte unavailable</Chip> : null}
                   {it.qualityPassed === false ? <Chip tone="fault">image quality</Chip> : null}
                   <ResultSummaryChips entries={it.results} />

@@ -23,8 +23,8 @@ export default async function CalibrationPage({ searchParams }: { searchParams: 
   // Viewing requires calibration.manage per the brief; the editors additionally check the same permission.
   const user = await requireUser("calibration.manage");
   const canManage = can(user, "calibration.manage");
-  // updateStripProductAction is gated on settings.manage (app/actions/strips.ts), not calibration.manage.
-  const canEditProduct = can(user, "settings.manage");
+  // updateStripProductAction is gated on calibration.manage (app/actions/strips.ts).
+  const canEditProduct = can(user, "calibration.manage");
   const { dataset: datasetId } = await searchParams;
 
   const [products, datasets, statuses, settings] = await Promise.all([listStripProducts(), listDatasets(), getCalibrationStatus(), getSettings()]);
@@ -44,7 +44,7 @@ export default async function CalibrationPage({ searchParams }: { searchParams: 
   return (
     <AppShell
       user={{ displayName: user.displayName, roleKey: user.roleKey }}
-      eyebrow="05 / Calibration"
+      eyebrow="08 / Calibration"
       title="Calibration Studio"
       actions={
         <Button href="/model-lab" variant="secondary" size="sm">
@@ -56,7 +56,7 @@ export default async function CalibrationPage({ searchParams }: { searchParams: 
       <div className="flex flex-col gap-6">
         <PrototypeBanner variant="inline" detail="No seeded model is validated. Every number produced from a synthetic dataset is a pipeline demonstration, not a measurement." />
 
-        <div className="grid grid-cols-[340px_minmax(0,1fr)_360px] gap-6 items-start">
+        <div className="grid grid-cols-[320px_minmax(0,1fr)_340px] items-start gap-5">
           {/* Left: strip products */}
           <div className="flex flex-col gap-4">
             {products.length === 0 ? (
@@ -109,7 +109,8 @@ export default async function CalibrationPage({ searchParams }: { searchParams: 
               {datasets.length === 0 ? (
                 <p className="px-5 py-6 text-[12.5px] text-fg-4">No datasets yet. Import a CSV below.</p>
               ) : (
-                <table className="table-instrument">
+                <div className="overflow-x-auto">
+                <table className="table-instrument ws-compact">
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -138,6 +139,7 @@ export default async function CalibrationPage({ searchParams }: { searchParams: 
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
             </Panel>
 

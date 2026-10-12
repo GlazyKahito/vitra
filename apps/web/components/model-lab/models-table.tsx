@@ -32,7 +32,7 @@ export function ModelsTable({ models, selectedId, compareId }: ModelsTableProps)
   }
   return (
     <div className="overflow-x-auto">
-      <table className="table-instrument min-w-max">
+      <table className="table-instrument ws-compact">
         <thead>
           <tr>
             <th>Model</th>
@@ -58,14 +58,14 @@ export function ModelsTable({ models, selectedId, compareId }: ModelsTableProps)
             const isCmp = model.id === compareId;
             return (
               <tr key={model.id} className={isSel ? "bg-[rgba(95,212,230,0.05)]" : isCmp ? "bg-[rgba(232,181,90,0.05)]" : undefined}>
-                <td>
+                <td className="whitespace-nowrap">
                   <Link href={`/model-lab?model=${encodeURIComponent(model.id)}`} className="t-mono text-[12px] text-fg hover:text-signal">
                     {model.id}
                   </Link>
                   <div className="t-mono text-[10.5px] text-fg-4">{model.version}</div>
                 </td>
                 <td>{isAnalyteKey(model.analyteKey) ? ANALYTE_BY_KEY[model.analyteKey].label : model.analyteKey}</td>
-                <td>{stripProduct.name}</td>
+                <td className="min-w-[140px]">{stripProduct.name}</td>
                 <td className="t-mono text-[12px]">{model.modelType}</td>
                 <td className="t-mono text-[12px]">{model.featureSet}</td>
                 <td>
@@ -79,7 +79,7 @@ export function ModelsTable({ models, selectedId, compareId }: ModelsTableProps)
                 <td className="t-mono">{fmt(test?.mae)}</td>
                 <td className="t-mono">{fmt(test?.rmse)}</td>
                 <td className="t-mono">{fmt(test?.r2)}</td>
-                <td className="t-mono text-[12px]">{formatDateTime(model.createdAt)}</td>
+                <td className="t-mono whitespace-nowrap text-[12px]">{formatDateTime(model.createdAt)}</td>
                 <td>
                   {selectedId && selectedId !== model.id ? (
                     <Link href={`/model-lab?model=${encodeURIComponent(selectedId)}&compare=${encodeURIComponent(model.id)}`} className="text-[12px] text-fg-3 hover:text-fg">

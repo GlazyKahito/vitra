@@ -16,12 +16,12 @@ export interface PanelProps extends Omit<HTMLAttributes<HTMLElement>, "title"> {
 export function Panel({ eyebrow, title, description, actions, flush, inset, footer, className, children, ...rest }: PanelProps) {
   const hasHeader = eyebrow || title || actions || description;
   return (
-    <section className={cn(inset ? "panel-inset" : "panel", "flex flex-col", className)} {...rest}>
+    <section className={cn(inset ? "panel-inset" : "panel ws-panel", "flex flex-col", className)} {...rest}>
       {hasHeader ? (
-        <header className="flex items-start justify-between gap-6 border-b border-line px-5 py-4">
+        <header className="ws-panel-head flex items-start justify-between gap-6 border-b border-line px-5 py-4">
           <div className="min-w-0">
             {eyebrow ? <div className="t-eyebrow mb-1">{eyebrow}</div> : null}
-            {title ? <h3 className="text-[15px] font-medium tracking-[-0.01em] text-fg">{title}</h3> : null}
+            {title ? <h3 className="text-[15px] font-medium tracking-[-0.012em] text-fg">{title}</h3> : null}
             {description ? <p className="mt-1 text-[13px] leading-relaxed text-fg-3">{description}</p> : null}
           </div>
           {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}

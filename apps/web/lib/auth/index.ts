@@ -41,9 +41,10 @@ export function can(user: SafeUser | null, permission: Permission): boolean {
 async function currentPath(): Promise<string> {
   try {
     const h = await headers();
-    // Set by middleware when present; otherwise fall back to referer-less default.
+    // x-vitra-path is set by middleware.ts on every page/route request; the others are best-effort fallbacks.
     const p = h.get("x-vitra-path") ?? h.get("x-invoke-path") ?? h.get("next-url");
-    if (p && p.startsWith("/")) return p;
+    // Same-origin paths only ("//host" would be an open redirect after login).
+    if (p && p.startsWith("/") && !p.startsWith("//")) return p;
   } catch {
     /* no request scope */
   }

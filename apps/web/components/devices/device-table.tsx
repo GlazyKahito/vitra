@@ -38,7 +38,8 @@ export function captureState(d: DeviceWithHealth): string {
 export function DeviceTable({ devices, selectedId }: { devices: DeviceWithHealth[]; selectedId?: string }) {
   if (devices.length === 0) return <p className="px-5 py-8 text-[12.5px] text-fg-4">No devices registered. The seed creates one simulated device; a Raspberry Pi appears once it is registered with an ingest key.</p>;
   return (
-    <table className="table-instrument">
+    <div className="overflow-x-auto">
+    <table className="table-instrument ws-compact">
       <thead>
         <tr>
           <th>Device</th>
@@ -54,10 +55,10 @@ export function DeviceTable({ devices, selectedId }: { devices: DeviceWithHealth
         {devices.map((d) => (
           <tr key={d.device.id} className={d.device.id === selectedId ? "bg-[rgba(95,212,230,0.05)]" : undefined}>
             <td>
-              <Link href={`/devices/${encodeURIComponent(d.device.id)}`} className="text-fg hover:text-signal">
+              <Link href={`/devices/${encodeURIComponent(d.device.id)}`} className="whitespace-nowrap text-fg hover:text-signal">
                 {d.device.name}
               </Link>
-              <div className="t-mono text-[10.5px] text-fg-4">{d.device.id}</div>
+              <div className="t-mono whitespace-nowrap text-[10.5px] text-fg-4">{d.device.id}</div>
             </td>
             <td>
               <DeviceKindTag device={d.device} />
@@ -75,5 +76,6 @@ export function DeviceTable({ devices, selectedId }: { devices: DeviceWithHealth
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

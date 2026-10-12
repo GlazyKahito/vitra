@@ -1,9 +1,13 @@
 import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { defaultStorageDir } from "@/lib/runtime-mode";
 
-/** Root for all stored files (images, reports, datasets). Relative paths are resolved from the app cwd. */
-export const STORAGE_DIR = path.resolve(process.cwd(), process.env.STORAGE_DIR ?? "./storage");
+/**
+ * Root for all stored files (images, reports, datasets). STORAGE_DIR env (relative paths resolve from the
+ * app cwd) wins; ephemeral demo mode (Vercel without DATABASE_URL) uses /tmp/vitra-storage; default ./storage.
+ */
+export const STORAGE_DIR = defaultStorageDir();
 
 export class StoragePathError extends Error {
   constructor(p: string) {
@@ -35,8 +39,24 @@ export async function writeFile(relPath: string, data: Uint8Array | string): Pro
   return { absPath: abs, byteSize: buf.byteLength, sha256: sha256(buf) };
 }
 
+/**
+ * Seeded image rows point at images/seed-fixtures/synthetic_strip_0N.png. Those SYNTHETIC renders also ship
+ * with the app in db/fixtures/strips, so they can still be served when the seed ran on another machine
+ * (e.g. seeding a hosted PostgreSQL from a laptop while the app runs on Vercel).
+ */
+export function bundledFixturePath(relPath: string): string | null {
+  const m = /^images\/seed-fixtures\/(synthetic_strip_0[1-6]\.png)$/.exec(relPath.replace(/\\/g, "/"));
+  return m ? path.join(process.cwd(), "db", "fixtures", "strips", m[1]) : null;
+}
+
 export async function readFile(relPath: string): Promise<Buffer> {
-  return fs.readFile(safeJoin(relPath));
+  try {
+    return await fs.readFile(safeJoin(relPath));
+  } catch (err) {
+    const fallback = bundledFixturePath(relPath);
+    if (fallback) return fs.readFile(fallback);
+    throw err;
+  }
 }
 
 export async function readText(relPath: string): Promise<string> {

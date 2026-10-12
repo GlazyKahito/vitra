@@ -4,9 +4,21 @@ Research prototype. Not a medical device. Not clinically validated.
 
 ## Engine
 
-- **Default:** embedded [PGlite](https://pglite.dev) (PostgreSQL compiled to WASM) persisted under
-  `apps/web/.data/pglite` (`PGLITE_DIR`). Zero setup; single process.
-- **Optional:** real PostgreSQL 15+ via `DATABASE_URL` (node-postgres pool). Same SQL, same migrations.
+- **Primary (production / shared deployments):** a real **PostgreSQL 15+** server via `DATABASE_URL`
+  (node-postgres pool, `DATABASE_POOL_MAX`, default 8). Hosted providers such as Neon or Vercel Postgres
+  work with `?sslmode=require`. TLS is resolved from `DATABASE_SSL` (`true`/`false`, wins), then
+  `PGSSLMODE`, then the URL's `sslmode` / `ssl` parameter; certificates are verified unless
+  `DATABASE_SSL_REJECT_UNAUTHORIZED=false`. Run `npm run db:migrate && npm run db:seed` once against it.
+- **Local development default:** embedded [PGlite](https://pglite.dev) (PostgreSQL compiled to WASM)
+  persisted under `apps/web/.data/pglite` (`PGLITE_DIR`). Zero setup; **single process**: do not run
+  `db:seed` / `models:bootstrap` while `next dev` has the same directory open.
+- **Temporary Vercel demo fallback:** on Vercel with no `DATABASE_URL`, PGlite lives in
+  `/tmp/vitra-pglite` (files in `/tmp/vitra-storage`). The first `getDb()` in each cold instance applies
+  migrations and the seed. Data is per instance and is lost whenever the instance is recycled; the app
+  shell shows an "Ephemeral demo instance" notice. Not for real use.
+
+Same SQL and migrations on every engine. The CLI scripts (`db:migrate`, `db:seed`, `models:bootstrap`)
+load `.env` / `.env.local` like `next dev`, so a `DATABASE_URL` set there is honoured.
 
 `lib/db.ts` → `getDb()` returns one shared Drizzle instance. All queries live in `lib/data/*.ts`
 (server-only); pages, server actions and route handlers call those modules and never touch Drizzle directly.

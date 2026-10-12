@@ -93,7 +93,7 @@ export function TabsTrigger({ value, disabled, count, className, children, ...re
       onClick={() => setValue(value)}
       className={cn(
         "relative -mb-px inline-flex h-10 items-center gap-2 border-b px-3 text-[13px] transition-colors duration-200",
-        selected ? "border-signal text-fg" : "border-transparent text-fg-3 hover:text-fg-2",
+        selected ? "border-[var(--lux-gold)] text-[var(--lux-ivory)]" : "border-transparent text-fg-3 hover:text-fg-2",
         disabled && "opacity-40",
         className,
       )}

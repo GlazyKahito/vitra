@@ -125,7 +125,7 @@ export interface ReviewQueueItem extends RunListItem { waitingSince: Date; criti
 // submitReview(runId, input: { decision: "accepted"|"rejected"|"needs_repeat"|"note"; note?: string }, actor): Promise<ClinicalReview>
 
 /* ───────── lib/data/reports.ts ───────── */
-// listReports(filter?: { q?: string; format?: "pdf"|"json"|"all" }): Promise<(Report & { run: Run; sample: Sample })[]>
+// listReports(filter?: { q?: string; format?: "pdf"|"json"|"all" }): Promise<(Report & { run: Run; sample: Sample; generatedByLabel: string | null })[]>  // generatedByLabel = users.displayName (left join)
 // generateReport(runId, format: "pdf"|"json", actor): Promise<Report>   // builds file under STORAGE_DIR/reports, inserts row, audit
 // getReportFile(reportId): Promise<{ report: Report; absPath: string } | null>
 

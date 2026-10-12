@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const controlBase =
-  "w-full rounded-[var(--radius-sm)] border border-line-strong bg-ink-1 px-3 text-[13.5px] text-fg placeholder:text-fg-4 transition-colors duration-200 hover:border-[rgba(255,255,255,0.24)] focus:border-signal focus:outline-none disabled:opacity-40 aria-[invalid=true]:border-fault";
+  "w-full rounded-[var(--radius-sm)] border border-line-strong bg-ink-1 px-3 text-[13.5px] text-fg placeholder:text-fg-4 transition-[border-color,background-color,box-shadow] duration-200 hover:border-[rgba(255,255,255,0.24)] focus:border-[rgba(201,169,110,0.7)] focus:bg-[#0c0e0d] focus:shadow-[0_0_0_3px_rgba(201,169,110,0.14)] focus:outline-none focus-visible:outline-none disabled:opacity-40 aria-[invalid=true]:border-fault";
 
 export interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
   hint?: ReactNode;

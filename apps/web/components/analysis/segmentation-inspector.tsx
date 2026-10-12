@@ -68,7 +68,7 @@ export function SegmentationInspector({ stripUrl, rectifiedWidth, rectifiedHeigh
       <div className="col-span-8">
         <div className="panel-inset relative overflow-hidden">
           {stripUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
+             
             <img src={stripUrl} alt="Rectified strip crop" className="block w-full" draggable={false} />
           ) : (
             <div className="flex h-28 items-center justify-center text-[12px] text-fg-4">Strip crop not available</div>

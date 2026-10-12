@@ -1,8 +1,9 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
+/** Shimmering placeholder block (`.ws-skel` in globals.css; static under reduced motion). */
 export function Skeleton({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return <div aria-hidden className={cn("animate-pulse rounded-[var(--radius-xs)] bg-[rgba(255,255,255,0.06)]", className)} {...rest} />;
+  return <div aria-hidden className={cn("ws-skel rounded-[var(--radius-xs)]", className)} {...rest} />;
 }
 
 export function SkeletonText({ lines = 3, className }: { lines?: number; className?: string }) {

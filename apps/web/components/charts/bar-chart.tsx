@@ -51,8 +51,8 @@ export function BarChart({ data, width = 640, height = 200, tone = "signal", ove
         return (
           <g key={d.label + i}>
             <title>{d.title ?? `${d.label}: ${d.value}${d.overlay ? ` (${d.overlay} overlay)` : ""}`}</title>
-            <rect x={cx - barW / 2} y={y} width={barW} height={Math.max(0, base - y)} fill={TONE_COLOR[tone]} opacity={0.85} rx={1} />
-            {d.overlay ? <rect x={cx - barW / 2} y={sy(d.overlay)} width={barW} height={Math.max(0, base - sy(d.overlay))} fill={TONE_COLOR[overlayTone]} rx={1} /> : null}
+            <rect className="ws-bar" style={{ animationDelay: `${120 + i * 26}ms` }} x={cx - barW / 2} y={y} width={barW} height={Math.max(0, base - y)} fill={TONE_COLOR[tone]} opacity={0.85} rx={1} />
+            {d.overlay ? <rect className="ws-bar" style={{ animationDelay: `${220 + i * 26}ms` }} x={cx - barW / 2} y={sy(d.overlay)} width={barW} height={Math.max(0, base - sy(d.overlay))} fill={TONE_COLOR[overlayTone]} rx={1} /> : null}
             {i % xLabelEvery === 0 ? (
               <text x={cx} y={height - 6} textAnchor="middle" style={MONO_TEXT_STYLE}>
                 {d.label}

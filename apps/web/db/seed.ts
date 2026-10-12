@@ -8,9 +8,11 @@
  * NOTE: lib/data/* modules import "server-only" and cannot be loaded by tsx; the seed writes through
  * Drizzle directly and mirrors the same conventions.
  */
+import "./load-env";
+import { promises as fs } from "node:fs";
 import path from "node:path";
 import { inArray, like, sql } from "drizzle-orm";
-import { getDb, type Db } from "@/lib/db";
+import { closeDb, getDb, type Db } from "@/lib/db";
 import {
   analysisRuns, analyteDefinitions, analyteResults, appSettings, auditEvents, calibrationDatasets, calibrationModels,
   clinicalReviews, colourFeatures, deviceEvents, devices, images, modelEvaluations, padSegmentations, permissions,
@@ -369,6 +371,51 @@ async function seedCalibration(db: Db, researcherId: string): Promise<void> {
   }
 }
 
+/* ───────── fixture strip images ───────── */
+// The six SYNTHETIC strip renders from services/cv/fixtures are vendored into db/fixtures/strips so they
+// ship with the web app (and the serverless bundle). The seed copies them into storage once and points
+// seeded image rows at them, so the result inspector shows a real (synthetic) image instead of an empty frame.
+const FIXTURE_NAMES = ["synthetic_strip_01.png", "synthetic_strip_02.png", "synthetic_strip_03.png", "synthetic_strip_04.png", "synthetic_strip_05.png", "synthetic_strip_06.png"] as const;
+type FixtureName = (typeof FIXTURE_NAMES)[number];
+interface StoredFixture { storagePath: string; byteSize: number; sha256: string; width: number; height: number }
+
+function pngSize(buf: Buffer): { width: number; height: number } | null {
+  // PNG signature + IHDR: width/height are big-endian uint32 at byte offsets 16 and 20.
+  if (buf.length < 24 || buf.readUInt32BE(0) !== 0x89504e47) return null;
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+}
+
+async function storeFixtureImages(log: (s: string) => void): Promise<Map<FixtureName, StoredFixture>> {
+  const out = new Map<FixtureName, StoredFixture>();
+  const candidates = [path.join(process.cwd(), "db", "fixtures", "strips"), path.join(process.cwd(), "..", "..", "services", "cv", "fixtures")];
+  for (const name of FIXTURE_NAMES) {
+    let buf: Buffer | null = null;
+    for (const dir of candidates) {
+      try {
+        buf = await fs.readFile(path.join(dir, name));
+        break;
+      } catch {
+        /* try next location */
+      }
+    }
+    if (!buf) continue;
+    const size = pngSize(buf);
+    const storagePath = `images/seed-fixtures/${name}`;
+    const file = await writeFile(storagePath, buf);
+    out.set(name, { storagePath, byteSize: file.byteSize, sha256: file.sha256, width: size?.width ?? 0, height: size?.height ?? 0 });
+  }
+  if (out.size < FIXTURE_NAMES.length) log(`fixture strip images: ${out.size}/${FIXTURE_NAMES.length} found (seeded runs without one show an empty image frame)`);
+  return out;
+}
+
+/** Fixture shown for a seeded run: quality-failure runs get the matching blurry / overexposed render. */
+function fixtureForRun(i: number, failKind: string | null): FixtureName {
+  if (failKind === "blur") return "synthetic_strip_04.png";
+  if (failKind === "overexposure") return "synthetic_strip_05.png";
+  if (failKind === "strip_visible" || failKind === "obstruction") return "synthetic_strip_06.png";
+  return (["synthetic_strip_01.png", "synthetic_strip_02.png", "synthetic_strip_03.png"] as const)[i % 3];
+}
+
 /* ───────── runs ───────── */
 function qualityChecks(fail: "blur" | "overexposure" | "strip_visible" | "obstruction" | null): QualityCheck[] {
   const ok = (id: string, label: string, value: string | number, threshold: string, message: string): QualityCheck => ({ id, label, status: "pass", value, threshold, message });
@@ -396,7 +443,7 @@ function qualityChecks(fail: "blur" | "overexposure" | "strip_visible" | "obstru
   return checks;
 }
 
-async function seedRuns(db: Db, seedSamples: SeedSample[], userIds: Record<string, string>): Promise<{ runIds: string[]; audits: (typeof auditEvents.$inferInsert)[] }> {
+async function seedRuns(db: Db, seedSamples: SeedSample[], userIds: Record<string, string>, fixtures: Map<FixtureName, StoredFixture>): Promise<{ runIds: string[]; audits: (typeof auditEvents.$inferInsert)[] }> {
   const audits: (typeof auditEvents.$inferInsert)[] = [];
   const runIds: string[] = [];
   const invalidSet = new Set([8, 17, 26, 35]);
@@ -427,26 +474,32 @@ async function seedRuns(db: Db, seedSamples: SeedSample[], userIds: Record<strin
     const drift = (i % 18) / 18;
     const levels = Object.fromEntries(ANALYTES.map((a) => [a.key, Math.max(0, Math.min(1, sample.levels[a.key] + (drift - 0.5) * 0.15 + r(-0.04, 0.04)))])) as Record<AnalyteKey, number>;
 
-    // Image row. Seeded runs point at placeholder paths; files are not rendered by the seed (synthetic PNGs come from the CV service on demand).
+    const failKind = isInvalid ? failKinds[[...invalidSet].indexOf(i)] : null;
+
+    // Image row. Points at one of the vendored SYNTHETIC fixture renders (copied into storage by
+    // storeFixtureImages). No overlay / strip crop exists for seeded runs: those are produced only by the
+    // CV service for live runs, so those frames stay empty rather than showing a fabricated annotation.
+    const placeholderSize = ri(180_000, 420_000);
+    const placeholderSha = Array.from({ length: 64 }, () => "0123456789abcdef"[ri(0, 15)]).join("");
+    const fixture = fixtures.get(fixtureForRun(i, failKind)) ?? null;
     await db.insert(images).values({
       id: imageId,
       sampleId: sample.id,
       source: imageSource,
       deviceId: viaDevice ? ID.device.sim : null,
-      storagePath: `images/${imageId}.png`,
-      overlayPath: isInvalid ? null : `overlays/${imageId}.png`,
-      stripCropPath: isInvalid ? null : `strips/${imageId}.png`,
+      storagePath: fixture?.storagePath ?? `images/${imageId}.png`,
+      overlayPath: null,
+      stripCropPath: null,
       mimeType: "image/png",
-      byteSize: ri(180_000, 420_000),
-      width: 1600,
-      height: 600,
-      sha256: Array.from({ length: 64 }, () => "0123456789abcdef"[ri(0, 15)]).join(""),
+      byteSize: fixture?.byteSize ?? placeholderSize,
+      width: fixture?.width ?? 1600,
+      height: fixture?.height ?? 600,
+      sha256: fixture?.sha256 ?? placeholderSha,
       capturedAt: createdAt,
       idempotencyKey: viaDevice ? `${ID.device.sim}:seed-${runNo}` : null,
       createdAt,
     });
 
-    const failKind = isInvalid ? failKinds[[...invalidSet].indexOf(i)] : null;
     const checks = qualityChecks(failKind);
     const qualityPassed = !isInvalid;
     const angle = round(r(-2.5, 2.5), 2);
@@ -457,6 +510,10 @@ async function seedRuns(db: Db, seedSamples: SeedSample[], userIds: Record<strin
     const rgbVec: number[] = [];
     const labVec: number[] = [];
     const padStates = new Map<AnalyteKey, "ok" | "warn" | "fail">();
+    // Child rows are collected and inserted after the run row (FK pad_segmentations.run_id → analysis_runs).
+    const padRows: (typeof padSegmentations.$inferInsert)[] = [];
+    const featureRows: (typeof colourFeatures.$inferInsert)[] = [];
+    const resultRows: (typeof analyteResults.$inferInsert)[] = [];
     if (!isInvalid) {
       for (let p = 0; p < 10; p++) {
         const key = DEFAULT_PAD_MAP[p];
@@ -469,7 +526,7 @@ async function seedRuns(db: Db, seedSamples: SeedSample[], userIds: Record<strin
         padStates.set(key, qualityStatus);
         const flags = qualityStatus === "fail" ? [pick(["specular", "occluded", "low_contrast"])] : qualityStatus === "warn" ? [pick(["low_uniformity", "clipped"])] : [];
         const segId = `seed-pad-${String(runNo).padStart(4, "0")}-${p}`;
-        await db.insert(padSegmentations).values({
+        padRows.push({
           id: segId,
           runId,
           padIndex: p,
@@ -481,7 +538,7 @@ async function seedRuns(db: Db, seedSamples: SeedSample[], userIds: Record<strin
           qualityMetrics: { uniformity: round(qualityStatus === "fail" ? r(0.4, 0.65) : qualityStatus === "warn" ? r(0.7, 0.85) : r(0.88, 0.99), 3), specular_fraction: round(flags.includes("specular") ? r(0.1, 0.3) : r(0, 0.02), 3), coverage: round(flags.includes("occluded") ? r(0.4, 0.7) : r(0.96, 1), 3), edge_contrast: round(flags.includes("low_contrast") ? r(0.05, 0.12) : r(0.3, 0.55), 3) },
           flags,
         });
-        await db.insert(colourFeatures).values({
+        featureRows.push({
           id: `seed-cf-${String(runNo).padStart(4, "0")}-${p}`,
           padSegmentationId: segId,
           rgbMean,
@@ -529,7 +586,7 @@ async function seedRuns(db: Db, seedSamples: SeedSample[], userIds: Record<strin
         reason = "Synthetic-data model (demo mode).";
       }
       states.push(state);
-      await db.insert(analyteResults).values({ id: `seed-res-${String(runNo).padStart(4, "0")}-${key}`, runId, analyteKey: key, padIndex: p, state, value, unit: def.unit, intervalLow, intervalHigh, modelId, reason });
+      resultRows.push({ id: `seed-res-${String(runNo).padStart(4, "0")}-${key}`, runId, analyteKey: key, padIndex: p, state, value, unit: def.unit, intervalLow, intervalHigh, modelId, reason });
     }
 
     let status: string;
@@ -561,12 +618,18 @@ async function seedRuns(db: Db, seedSamples: SeedSample[], userIds: Record<strin
       stripGeometry,
       featureVector: isInvalid ? null : { rgb_30: rgbVec, lab_30: labVec },
       timings: { decode: ri(8, 20), quality: ri(20, 60), localize: ri(30, 90), segment: ri(10, 30), features: ri(5, 15), total: ri(90, 220) },
-      warnings: isInvalid ? ["Synthetic fixture: quality failure injected for UI testing."] : isResearch ? ["No calibration model exists for this strip product; values withheld."] : ["Synthetic demo run: values come from a model trained on synthetic data."],
+      warnings: [
+        ...(isInvalid ? ["Synthetic fixture: quality failure injected for UI testing."] : isResearch ? ["No calibration model exists for this strip product; values withheld."] : ["Synthetic demo run: values come from a model trained on synthetic data."]),
+        ...(fixture ? ["Seeded run: the image is an illustrative SYNTHETIC fixture render; quality checks, pad features and values were generated by the seed, not extracted from it."] : []),
+      ],
       synthetic: true,
       errorMessage: null,
       createdAt,
       completedAt,
     });
+    if (padRows.length) await db.insert(padSegmentations).values(padRows);
+    if (featureRows.length) await db.insert(colourFeatures).values(featureRows);
+    if (resultRows.length) await db.insert(analyteResults).values(resultRows);
     runIds.push(runId);
 
     const actorKey = operatorKey ?? "operator";
@@ -636,7 +699,8 @@ export async function seed(db?: Db, log: (s: string) => void = console.log): Pro
   log("calibration dataset + models (synthetic)");
   await seedCalibration(d, userIds.researcher);
   log("runs, results, reviews, audit");
-  const { audits } = await seedRuns(d, seedSamplesRows, userIds);
+  const fixtures = await storeFixtureImages(log);
+  const { audits } = await seedRuns(d, seedSamplesRows, userIds, fixtures);
   await d.insert(auditEvents).values(audits);
   await seedSettings(d);
   log(`seed v${SEED_VERSION} complete: 4 users, 2 strip products, 3 batches, 2 devices, 18 samples, 36 runs, 3 synthetic models, ${audits.length} audit events`);
@@ -645,9 +709,11 @@ export async function seed(db?: Db, log: (s: string) => void = console.log): Pro
 const isDirect = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(process.cwd(), "db", "seed.ts");
 if (isDirect) {
   seed()
+    .then(() => closeDb())
     .then(() => process.exit(0))
-    .catch((err) => {
+    .catch(async (err) => {
       console.error(err);
+      await closeDb();
       process.exit(1);
     });
 }

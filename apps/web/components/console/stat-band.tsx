@@ -1,6 +1,7 @@
 import { Sparkline } from "@/components/charts";
 import type { ConsoleStats } from "@/lib/data/contract";
 import { pct } from "@/lib/utils";
+import { CountValue } from "@/components/ui/count-value";
 
 interface Stat {
   label: string;
@@ -20,12 +21,14 @@ export function StatBand({ stats }: { stats: ConsoleStats }) {
     { label: "Synthetic share", value: `${pct(stats.syntheticRuns, stats.totalRuns)}%`, caption: `${stats.syntheticRuns} synthetic runs` },
   ];
   return (
-    <div className="panel grid grid-cols-5 divide-x divide-line">
+    <div className="panel ws-statband grid grid-cols-5 divide-x divide-line">
       {items.map((s) => (
-        <div key={s.label} className="flex flex-col gap-2 px-5 py-4">
+        <div key={s.label} className="ws-tile flex flex-col gap-2 px-5 py-4">
           <div className="t-eyebrow">{s.label}</div>
           <div className="flex items-end justify-between gap-3">
-            <div className={"t-mono text-[28px] leading-none tracking-[-0.02em] " + (s.tone === "notice" ? "text-notice" : s.tone === "fault" ? "text-fault" : "text-fg")}>{s.value}</div>
+            <div className={"t-mono text-[28px] leading-none tracking-[-0.02em] " + (s.tone === "notice" ? "text-notice" : s.tone === "fault" ? "text-fault" : "text-fg")}>
+              <CountValue value={s.value} />
+            </div>
             {s.spark ? <Sparkline values={s.spark} width={72} height={22} tone="neutral" ariaLabel="Runs per day, last 7 days" /> : null}
           </div>
           {s.caption ? <div className="text-[11.5px] text-fg-4">{s.caption}</div> : null}

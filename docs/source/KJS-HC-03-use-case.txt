@@ -1,0 +1,242 @@
+Text extracted from the KJS-HC-03 use-case document (KJS-HLC-01 Use Case - Dr. Ninad.docx).
+
+FRAMEWORK FOR AI USE CASE INTEGRATION IN CURRICULUM DELIVERY
+Part A: AI Use Case Profile
+Use Case ID: KJS-HC-03
+Use Case Title: Urine Test Strip Reader using Colorimetry as a Point-of-Care Technology
+Application Domain: Healthcare 
+Collaborating Organization: K. J. Somaiya Hospital and Research Center, Mumbai; Paramcare Lifesciences Pvt. Ltd., Mumbai
+Beneficiaries: Patients undergoing routine urinalysis at point-of-care settings; clinical staff and pathologists at K. J. Somaiya Hospital; diagnostic product users of Paramcare Lifesciences Pvt. Ltd.; rural and resource-limited healthcare providers requiring objective, automated urine analysis without laboratory infrastructure.
+Problem Statement: Urine test strips are widely used for rapid, low-cost screening of key health parameters (glucose, protein, pH, ketones, blood, leucocytes, and others). However, the conventional method of reading results relies on subjective visual comparison against a printed colour chart, leading to significant inter-observer variability and categorical (range-based) outputs instead of precise numerical concentrations. There is no existing affordable, portable system that can objectively capture, process, and quantify all 10 reagent pads on a urine strip simultaneously under controlled conditions and output exact continuous analyte concentrations in a hospital or point-of-care setting.
+Background and Context: Urine dipstick analysis is one of the most frequently performed diagnostic tests globally, used to screen for conditions including diabetes, urinary tract infections, kidney disease, and liver disorders. Commercial strips (such as those manufactured by Paramcare Lifesciences Pvt. Ltd.) carry up to 10 reagent pads that undergo colour changes at 60–120 seconds after urine contact. The challenge in automated reading arises from the non-linear, multi-dimensional nature of the colour-to-concentration relationship: pad colours do not change uniformly or independently, and ambient light variation further corrupts readings. Smartphone-based solutions have been explored but suffer from uncontrolled illumination and lens distortion. This project proposes a controlled hardware enclosure (“black box”) with calibrated LED illumination and a Raspberry Pi camera to eliminate environmental variability, combined with advanced non-linear regression and Computer Vision algorithms to deliver precise, continuous analyte concentrations — a step beyond the categorical outputs of prior systems.
+Objectives: 
+To design and fabricate a controlled illumination enclosure with brightness-regulated LED strips and a Raspberry Pi camera module to eliminate ambient light variability during strip image capture.
+To develop a Computer Vision pipeline using OpenCV to automatically detect and spatially isolate all 10 reagent pads on a horizontally aligned urine test strip.
+To implement advanced non-linear regression models (multidimensional polynomial interpolation or deep learning-based regression) to map extracted RGB values of each pad directly to exact continuous analyte concentrations.
+To automate the full workflow: strip placement → 120-second reaction wait → triggered image capture → pad RGB extraction → concentration computation → structured digital report.
+To integrate results with patient ID and timestamp into a hospital-compatible database for time-series health monitoring at K J Somaiya Hospital and for product validation at Paramcare Lifesciences.
+Solution Approach:
+The system uses a Raspberry Pi 5 as the central edge computing unit. A custom-built opaque black box houses the strip holder, brightness-controlled LED strips providing uniform illumination, and the Raspberry Pi camera module. Upon strip insertion and a timed 120-second biochemical reaction, the system auto-triggers image capture. A Python-based Computer Vision pipeline (OpenCV) applies fixed-geometry bounding boxes to isolate each of the 10 horizontally aligned reagent pads and extracts average RGB values per pad. These multi-dimensional RGB vectors are passed to a trained non-linear regression model (multidimensional polynomial interpolation or a deep learning regression head) that maps directly to continuous numerical concentrations for each analyte (e.g., “Glucose: 100 mg/dL”, “Protein: 30 mg/dL”). Results are logged to a structured patient database. No smartphone camera or external laptop is required — the entire pipeline runs on-device, making the system a true standalone point-of-care diagnostic unit.
+Fig. 1: Picture of current Prototype
+Operational Challenges: 
+Strip brand variability: different manufacturers use different dye formulations, so calibration models must be re-trained per strip brand.
+LED aging and calibration drift: LED brightness shifts over time, degrading colour accuracy; requires periodic recalibration.
+Pad crosstalk and overlap: adjacent reagent pads may bleed colour into each other during image capture, requiring precise segmentation.
+Non-linear, non-independent colour response: colour transitions across the 10 pads are interdependent (e.g., pH affects other readings), demanding multidimensional models rather than independent single-pad regression.
+Clinical validation: correlation of device output with gold-standard laboratory urinalysis results at K J Somaiya Hospital to establish clinical accuracy thresholds.
+Data security and patient privacy: ensuring encrypted transmission and storage of patient test results in compliance with the Digital Personal Data Protection (DPDP) Act 2023. Critical technical, operational, and implementation-related questions that must be resolved to design, deploy, and effectively utilize the proposed solution.
+High-Level Workflow: 
+Sample Preparation
+Patient provides urine sample; strip is dipped and placed in the device holder
+Biochemical reaction initiates across all 10 reagent pads
+Timed Reaction Wait
+Raspberry Pi timer counts 120 seconds for full colour development
+System remains in standby; no image capture during reaction period
+Controlled Image Capture
+Camera auto-triggers at 120 seconds inside the sealed black box
+Brightness-regulated LED strips provide uniform, calibrated illumination
+Pad Segmentation (Computer Vision)
+OpenCV pipeline applies fixed-geometry bounding boxes to isolate each pad
+Average RGB values computed for each of the 10 pads
+Concentration Prediction (AI & ML)
+Non-linear regression model maps 30-dimensional RGB vector to exact analyte concentrations
+Multidimensional polynomial interpolation or deep learning regression head
+Report Generation & Data Logging
+Structured digital report generated (patient ID, timestamp, 10 analyte concentrations)
+Results encrypted and securely transmitted to hospital database for time-series tracking
+Clinical Review
+Clinician or pathologist reviews flagged results
+Abnormal values highlighted against clinical reference intervals
+Device output used as decision support; confirmation by clinician required
+Expected Outputs: 
+A working prototype of the Urine Test Strip Reader device (Raspberry Pi-based, self-contained in a black box enclosure).
+A trained non-linear regression model delivering exact continuous concentrations for all 10 analyte parameters (glucose, protein, pH, ketones, blood, bilirubin, urobilinogen, nitrite, leucocytes, specific gravity).
+A Python software stack for image capture, Computer Vision pad segmentation, and ML inference, deployable on Raspberry Pi 5.
+A patient-linked digital report (PDF/structured data) with 10 analyte values, timestamp, and patient ID.
+A hospital-compatible database module for time-series urinalysis logging at K. J. Somaiya Hospital.
+A published research paper validating device accuracy against gold-standard laboratory urinalysis results.
+Modern AI Governance and Paradigms:
+Area
+Relevance
+Recommended Consideration
+Privacy & Data Protection
+High 
+Patient urine test results are sensitive medical data. Implement AES-256 encryption for data at rest and in transit. Apply patient data anonymisation for model training datasets. Enforce role-based access control for hospital database. Comply with the Digital Personal Data Protection (DPDP) Act 2023.
+AI Security & Trustworthiness
+High
+The regression model must produce consistent, reproducible outputs across different strip batches and lighting conditions. Validate model predictions against gold-standard laboratory results. Establish uncertainty quantification so clinicians are aware of model confidence levels.
+Responsible AI
+High
+The AI model must not produce false negatives for critical analytes (e.g., glucose, blood). Ensure the system reports concentration ranges clearly flagged against clinical reference intervals. Present results as decision support only. Include clear uncertainty/confidence indicators in reports.
+Generative AI / LLMs
+Low
+Not directly applicable to the core colorimetric pipeline. Future scope: LLM-based clinical report narration or anomaly explanation may be explored as an add-on feature.
+Agentic AI
+Low
+Not applicable at present. The system follows a deterministic, fully automated pipeline with no autonomous agent required.
+Human-in-the-Loop Decision Making
+High
+The device produces medical diagnostic data. A qualified clinician or pathologist must review and approve all results before any clinical action is taken. Flag any out-of-range results prominently for immediate clinical review.
+Regulatory / Governance Considerations
+High
+The device qualifies as an In Vitro Diagnostic (IVD) medical device under Indian regulations (CDSCO MDR 2017). Compliance with CDSCO IVD classification and approval process is required before clinical deployment. Patient data handling must comply with the DPDP Act 2023. Ethics committee approval from K. J. Somaiya Hospital is required for clinical validation studies.
+Part B: Program-wise AI Use Case Mapping
+Programs Mapped:
+Institute: KJSIT
+Institute: KJSSE
+Information Technology
+√
+Information Technology
+√
+Computer Engineering
+√
+Computer Engineering
+√
+Artificial Intelligence & Data Science
+√
+Artificial Intelligence & Data Science
+√
+Electronics and Telecommunication
+√
+Electronics & Telecommunication Engineering
+√
+Computer & Communication Engineering
+√
+Electronics & Computer Engineering
+√
+Electronics Engineering (VLSI Design & Technology)
+√
+Computer Science & Business Systems
+√
+Mechanical Engineering
+√
+Robotics & Artificial Intelligence
+√
+Technology Domains Involved:
+Program
+Technology Domain
+Layer
+Role in Use Case
+Inter-Disciplinary Dependencies
+Electronics & Telecommunication Engineering
+(Primary)
+Emerging Technologies (Edge Computing) / Programming & Software Development
+Hardware + Edge
+Raspberry Pi camera control; LED brightness scripting; timed (120 s) image capture automation; on-device MobileSAM edge inference
+Receives fabricated enclosure from MECH and sensor/accelerator front-end from VLSI; sends calibrated RGB images to AI-DS; pushes results to IT/CE database
+Electronics Engineering (VLSI Design & Technology)
+Semiconductor Design / Hardware Acceleration
+Hardware (Silicon)
+CMOS image-sensor front-end interfacing; LED driver IC design; low-power FPGA/ASIC acceleration of segmentation & inference for a GPU-free device
+Supplies optimised sensor/accelerator hardware to EXTC edge layer; co-designs with E&CE
+Electronics & Computer Engineering
+Hardware-Software Co-Design / Embedded Vision
+Hardware ↔ Software bridge
+Device drivers, real-time scheduling, and hardware-accelerated image pipeline tuning so the CV model runs efficiently on constrained Pi hardware
+Bridges EXTC/VLSI hardware and AI-DS software; optimises model deployment on edge
+Mechanical Engineering
+Product Design & Fabrication
+Physical / Enclosure
+CAD design and fabrication (3D printing/machining) of the controlled-illumination black-box enclosure; strip-holding fixture; thermal and light-leak management
+Provides physical platform housing EXTC camera, LEDs, and VLSI boards; constrains optical geometry used by AI-DS
+Robotics & Artificial Intelligence
+Automation & Mechatronics / Applied AI
+Hardware + Control
+Motorised strip/sample positioning, automated camera staging, and closed-loop capture triggering to remove manual handling variability
+Feeds correctly positioned strips to EXTC capture stage; consumes vision feedback from AI-DS for actuation
+Artificial Intelligence & Data Science
+AI & Data Science (Computer Vision + ML)
+Software / AI
+MobileSAM-based reagent-pad segmentation; RGB/CIELAB feature extraction; Euclidean nearest-neighbour & regression-based analyte classification
+Receives calibrated images from EXTC; outputs analyte concentrations to CE/IT database module
+Computer Engineering
+Computing Foundations / Systems Software
+Software / Backend
+System architecture, OS-level resource management on the Pi, backend services, and patient-linked relational database design
+Receives structured analyte data from AI-DS; exposes APIs to IT dashboard and C&CE transmission layer
+Information Technology
+Networks, Security & Cloud Services
+Software / Cloud
+Encrypted data transmission, cloud storage of time-series results, digital report generation, and the clinical-staff web dashboard
+Receives structured data from CE/AI-DS; interfaces with K. J. Somaiya Hospital HIS
+Computer & Communication Engineering
+Data Communication / IoT Connectivity
+Networks / Communication
+Secure telemetry between the edge device and cloud/HIS; IoT protocols for multi-site point-of-care deployment and remote monitoring
+Transports data between EXTC/CE edge and IT cloud; enforces secure communication standards
+Computer Science & Business Systems
+Business Analytics / Healthcare Informatics
+Application / Business
+Population-level health analytics, cost-benefit and deployment modelling for resource-limited settings, and decision dashboards for administrators
+Consumes analyte/usage data from IT/CE layers to drive business and clinical-operations insights
+Part C: Course-level AI Use Case Mapping
+Course-level AI Use Case Mapping:
+Institute: KJSSE           Program: IT
+Course
+Contribution to Use Case
+Relevant Topics from Syllabus
+Potential Modes of Integration
+Cyber Law
+Patient Data Privacy Governance
+Cyber Security Standards
+IA
+Web Programming II Laboratory
+User interface for uploading/capturing urine strip images 
+JSX syntax and rendering elements, Component lifecycle and state management,Handling events in React JS 
+LAB CA or IA
+Data Communication and Networking
+Ensures integrity of transmitted medical data
+Module 5.1 – Error Detection & Correction (CRC, Checksum)
+Lab CA or IA
+Artificial Intelligence
+Design an intelligent agent for automated urine strip analysis and diagnostic report generation. 
+Module 1: Structure of Intelligent Agents, Types of Agents, Agent Environments (PEAS Representation) 
+Lab CA or IA
+Institute: Name             Program: Name AI &DS
+Course
+Contribution to Use Case
+Relevant Topics from Syllabus
+Potential Modes of Integration
+DE I- Fundamentals of Cyber
+Security-I 
+Privacy of PHI , health reports of the patient for Report Generation & Data Logging
+Module 5 : Role of Artificial Intelligence in Cyber Security
+LAB CA or  IA
+Information and  Network Security
+Integration of information and network security techniques to protect AI-enabled medical diagnostics by ensuring data confidentiality, integrity, authentication, and patient privacy. This demonstrates the integration of cybersecurity principles in securing AI-driven point-of-care healthcare systems against cyber threats.
+Cryptography, Access control, software security, network and web security
+Theory Lectures, LAB CA or IA
+DE I- Introduction to Text Analytics 
+Patient Feedback Sentiment Analysis using NLP 
+Sentiment Analysis
+Lab experiment
+OOPL
+Design and Implementation of Data visualization tool to extract patient details , clinical details and reports and identify potential health risks using Object-Oriented Programming 
+classes and objects,Inheritance, Polymorphism,exception handling, Abstraction and GuI programming
+Lab Experiment / Mini Project
+Part D: Inter-disciplinary Faculty Committee
+Faculty Owner(s): 
+Dr. Ninad Mehendale, Associate Professor, Department of Electronics Engineering, K J Somaiya School of Engineering
+Dr. Jagannath Nirmal, Professor and Head, Department of Electronics Engineering, K J Somaiya School of Engineering
+Program-level Integration Coordinators:
+Institute
+Program
+Coordinator
+KJSIT
+e.g. IT
+Faculty Name & Designation
+KJSSE
+e.g. Mechanical
+Faculty Name & Designation
+Course-wise Integration Coordinators:
+Institute
+Program
+Course
+Course In-charge
+KJSIT
+e.g. IT
+Faculty Name & Designation
+KJSSE
+e.g. Mechanical
+Faculty Name & Designation
+********

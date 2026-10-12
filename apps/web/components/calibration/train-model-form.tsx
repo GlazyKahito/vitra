@@ -47,8 +47,8 @@ export function TrainModelForm({ datasets, products, canTrain, initialDatasetId 
   const refCount = dataset?.perAnalyteCounts?.[analyte];
   const tf = Number(testFraction);
   const tfOk = Number.isFinite(tf) && tf >= 0.1 && tf <= 0.5;
-  const versionAuto = useMemo(() => `${analyte}-${modelType.replace(/_/g, "")}-${featureSet}-v1`, [analyte, modelType, featureSet]);
-  const effectiveVersion = version.trim() || versionAuto;
+  // Left empty, the server derives the next free version (<analyte>-<type>-<features>-vN).
+  const versionAuto = useMemo(() => `auto: ${analyte}-${modelType.replace(/_ridge$/, "")}-${featureSet}-vN`, [analyte, modelType, featureSet]);
   const padRequired = featureSet === "pad_rgb";
   const blocking = !canTrain || !dataset || !tfOk || (padRequired && padIndex < 0) || (refCount !== undefined && refCount < 20);
 
@@ -60,7 +60,7 @@ export function TrainModelForm({ datasets, products, canTrain, initialDatasetId 
     fd.set("modelType", modelType);
     fd.set("featureSet", featureSet);
     if (padIndex >= 0) fd.set("padIndex", String(padIndex));
-    fd.set("version", effectiveVersion);
+    if (version.trim()) fd.set("version", version.trim());
     fd.set("testFraction", String(tf));
     start(async () => {
       const res = await trainModelAction(fd);

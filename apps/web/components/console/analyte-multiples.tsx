@@ -17,13 +17,13 @@ export function AnalyteMultiples({ series }: { series: ConsoleStats["analyteValu
     );
   }
   return (
-    <div className="grid grid-cols-5 gap-3">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(232px,1fr))] gap-3">
       {withValues.map((s) => {
         const def = isAnalyteKey(s.analyteKey) ? ANALYTE_BY_KEY[s.analyteKey] : null;
         const pts = s.points.slice(-24);
         const synthCount = pts.filter((p) => p.synthetic).length;
         return (
-          <div key={s.analyteKey} className="panel p-4">
+          <div key={s.analyteKey} className="panel ws-lift p-4">
             <ChartFrame
               eyebrow={def?.short ?? s.analyteKey}
               title={def?.label ?? s.analyteKey}

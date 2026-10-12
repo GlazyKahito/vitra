@@ -3,10 +3,11 @@
  *   tsx db/migrate.ts            apply pending migrations
  *   tsx db/migrate.ts --reset    PGlite: delete the data directory; Postgres: drop all VITRA tables; then re-apply
  */
+import "./load-env";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { sql } from "drizzle-orm";
-import { execRaw, getDb, PGLITE_DIR, type Db } from "@/lib/db";
+import { closeDb, execRaw, getDb, PGLITE_DIR, type Db } from "@/lib/db";
 
 const MIGRATIONS_DIR = path.join(process.cwd(), "db", "migrations");
 
@@ -83,9 +84,11 @@ async function main(): Promise<void> {
 const isDirect = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(process.cwd(), "db", "migrate.ts");
 if (isDirect) {
   main()
+    .then(() => closeDb())
     .then(() => process.exit(0))
-    .catch((err) => {
+    .catch(async (err) => {
       console.error(err);
+      await closeDb();
       process.exit(1);
     });
 }

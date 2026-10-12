@@ -196,7 +196,7 @@ export function ImageAcquisition({ value, onChange, sources = ["upload", "browse
         <div className="grid grid-cols-12 gap-5">
           <div className="col-span-8">
             <div className="panel-inset relative flex items-center justify-center overflow-hidden" style={{ minHeight: 280 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              { }
               <img src={value.previewUrl} alt="Strip preview" className="max-h-[420px] max-w-full object-contain transition-transform duration-300" style={{ transform: `rotate(${value.rotation}deg)` }} />
               {value.source === "synthetic" ? <span className="absolute left-3 top-3 rounded-[2px] border border-dashed border-line-strong bg-ink-0/80 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-fg-2">Synthetic</span> : null}
             </div>

@@ -14,6 +14,7 @@ const schema = z.object({
   sampleId: z.string().min(1).optional(),
   sampleCode: z.string().trim().regex(/^[A-Za-z0-9._-]{2,40}$/).optional(),
   subjectPseudonym: z.string().trim().max(64).optional(),
+  notes: z.string().trim().max(2000).optional(),
   stripProductId: z.string().min(1).optional(),
   stripBatchId: z.string().trim().optional(),
   deviceId: z.string().trim().optional(),
@@ -26,7 +27,7 @@ const schema = z.object({
 
 /**
  * startAnalysisAction(formData)
- * Fields: file (image), sampleId | sampleCode (+ subjectPseudonym to create), stripProductId, stripBatchId?,
+ * Fields: file (image), sampleId | sampleCode (+ subjectPseudonym, notes to create), stripProductId, stripBatchId?,
  * deviceId?, mode, imageSource, reactionSeconds?, reactionStartedAt?, synthetic?
  */
 export async function startAnalysisAction(formData: FormData): Promise<ActionResult<{ runId: string; runCode: string; status: string }>> {
@@ -36,6 +37,7 @@ export async function startAnalysisAction(formData: FormData): Promise<ActionRes
       sampleId: str(formData, "sampleId") || undefined,
       sampleCode: str(formData, "sampleCode") || undefined,
       subjectPseudonym: str(formData, "subjectPseudonym") || undefined,
+      notes: str(formData, "notes")?.trim() || undefined,
       stripProductId: str(formData, "stripProductId") || undefined,
       stripBatchId: str(formData, "stripBatchId") || undefined,
       deviceId: str(formData, "deviceId") || undefined,
@@ -62,7 +64,8 @@ export async function startAnalysisAction(formData: FormData): Promise<ActionRes
     if (!sampleId) {
       const code = d.sampleCode || (await nextSampleCode());
       const existing = await getSampleByCode(code);
-      const sample = existing ?? (await createSample({ sampleCode: code, subjectPseudonym: d.subjectPseudonym, synthetic: d.synthetic || d.imageSource === "synthetic" }, user));
+      // New-sample notes are stored as samples.metadata.notes (only when the sample is created here).
+      const sample = existing ?? (await createSample({ sampleCode: code, subjectPseudonym: d.subjectPseudonym, metadata: d.notes ? { notes: d.notes } : undefined, synthetic: d.synthetic || d.imageSource === "synthetic" }, user));
       sampleId = sample.id;
     }
 

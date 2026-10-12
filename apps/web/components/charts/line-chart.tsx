@@ -99,16 +99,18 @@ export function LineChart({
         const color = TONE_COLOR[s.tone ?? SERIES_TONES[i % SERIES_TONES.length]];
         const path = buildPath(s.points, sx, sy);
         return (
-          <g key={s.id}>
-            {area && i === 0 && path ? <path d={`${path} L${sx(s.points[s.points.length - 1].x)},${height - PAD.bottom} L${sx(s.points[0].x)},${height - PAD.bottom} Z`} fill={color} opacity={0.08} /> : null}
-            {path ? <path d={path} fill="none" stroke={color} strokeWidth={1.5} strokeDasharray={s.dashed ? "4 3" : undefined} strokeLinejoin="round" strokeLinecap="round" /> : null}
-            {showPoints
-              ? s.points.map((p, j) =>
+          <g key={s.id} className="ws-series">
+            {area && i === 0 && path ? <path className="ws-area" d={`${path} L${sx(s.points[s.points.length - 1].x)},${height - PAD.bottom} L${sx(s.points[0].x)},${height - PAD.bottom} Z`} fill={color} opacity={0.08} /> : null}
+            {path ? <path d={path} className={s.dashed ? "ws-fade" : "ws-draw"} pathLength={s.dashed ? undefined : 1} fill="none" stroke={color} strokeWidth={1.5} strokeDasharray={s.dashed ? "4 3" : undefined} strokeLinejoin="round" strokeLinecap="round" /> : null}
+            {showPoints ? (
+              <g className="ws-markers">
+                {s.points.map((p, j) =>
                   p.y === null ? null : (
                     <Marker key={j} cx={sx(p.x)} cy={sy(p.y)} color={color} synthetic={p.synthetic} state={p.state} title={markerTitle(s, p, yFormat)} />
                   ),
-                )
-              : null}
+                )}
+              </g>
+            ) : null}
           </g>
         );
       })}

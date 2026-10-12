@@ -24,7 +24,7 @@ export default async function SettingsPage() {
   const [settings, products, cv, users] = await Promise.all([getSettings(), listStripProducts(), probeCvHealth(), canSeeUsers ? listUsers() : Promise.resolve([])]);
 
   return (
-    <AppShell user={{ displayName: user.displayName, roleKey: user.roleKey }} eyebrow="09 / Settings" title="Settings" actions={canEdit ? <Chip tone="signal">editable</Chip> : <Chip tone="muted">read-only</Chip>} onLogout={logoutAction}>
+    <AppShell user={{ displayName: user.displayName, roleKey: user.roleKey }} eyebrow="11 / Settings" title="Settings" actions={canEdit ? <Chip tone="signal">editable</Chip> : <Chip tone="muted">read-only</Chip>} onLogout={logoutAction}>
       <div className="flex flex-col gap-6">
         <PrototypeBanner variant="inline" detail="Settings change workflow defaults only. Nothing here can make a result clinically valid." />
 

@@ -31,7 +31,7 @@ export function DonutStatus({ slices, size = 132, thickness = 14, centerLabel, c
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-line)" strokeWidth={thickness} />
         {slices
           .filter((s) => s.value > 0)
-          .map((s) => {
+          .map((s, idx) => {
             const len = (s.value / total) * c;
             const el = (
               <circle
@@ -44,6 +44,8 @@ export function DonutStatus({ slices, size = 132, thickness = 14, centerLabel, c
                 strokeWidth={thickness}
                 strokeDasharray={`${Math.max(0, len - 1.5)} ${c - Math.max(0, len - 1.5)}`}
                 strokeDashoffset={-offset}
+                className="ws-slice"
+                style={{ animationDelay: `${160 + idx * 90}ms` }}
                 transform={`rotate(-90 ${size / 2} ${size / 2})`}
               >
                 <title>{`${s.label}: ${s.value}`}</title>

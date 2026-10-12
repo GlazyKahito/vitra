@@ -29,7 +29,7 @@ export default async function ModelLabPage({ searchParams }: { searchParams: Pro
   return (
     <AppShell
       user={{ displayName: user.displayName, roleKey: user.roleKey }}
-      eyebrow="06 / Model Lab"
+      eyebrow="09 / Model Lab"
       title="Model evaluation"
       actions={
         <Button href="/calibration" variant="secondary" size="sm">

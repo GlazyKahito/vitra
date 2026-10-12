@@ -61,6 +61,8 @@ export function ScatterChart({ points, width = 420, height = 260, tone = "signal
       ) : null}
       {fit ? (
         <line
+          className="ws-draw"
+          pathLength={1}
           x1={sx(xN.domain.min)}
           y1={sy(fit.slope * xN.domain.min + fit.intercept)}
           x2={sx(xN.domain.max)}
@@ -69,9 +71,11 @@ export function ScatterChart({ points, width = 420, height = 260, tone = "signal
           strokeWidth={1.5}
         />
       ) : null}
+      <g className="ws-markers">
       {points.map((p, i) => (
         <Marker key={i} cx={sx(p.x)} cy={sy(p.y)} color={TONE_COLOR[p.tone ?? tone]} synthetic={p.synthetic} title={[p.label, `${xFormat(p.x)} → ${yFormat(p.y)}`, p.synthetic ? "SYNTHETIC" : null].filter(Boolean).join(" · ")} />
       ))}
+      </g>
       {xLabel ? (
         <text x={(PAD.left + width - PAD.right) / 2} y={height - 2} textAnchor="middle" style={{ ...MONO_TEXT_STYLE, fill: "var(--color-fg-4)" }}>
           {xLabel.toUpperCase()}

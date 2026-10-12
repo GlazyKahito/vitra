@@ -14,7 +14,7 @@ talks to the CV service directly.
 
 | Header | Required | Meaning |
 | --- | --- | --- |
-| `X-Device-Id` | yes | Device **name** as registered in the `devices` table (e.g. `VITRA-PI-01`, `SIM-01`). `[A-Za-z0-9._-]{2,64}` |
+| `X-Device-Id` | yes | Device **name** (`devices.name`, e.g. `VITRA-PI-01`, `SIM-01`), **not** the internal row id (`devices.id`, e.g. `seed-device-sim-01`). Looked up by name; `[A-Za-z0-9._-]{2,64}` |
 | `X-Device-Key` | yes | Plaintext API key issued by *Devices → Rotate key*. Only its scrypt hash is stored (`devices.api_key_hash`). |
 | `Idempotency-Key` | no | Opaque string (≤ 200 chars) unique per capture. A repeated key returns **200** with the existing run instead of creating a new one. Scoped per device. |
 | `X-Capture-Timestamp` | no | ISO-8601 time the frame was captured on the device (`images.captured_at`, `analysis_runs.captured_at`). |

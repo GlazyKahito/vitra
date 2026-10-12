@@ -309,7 +309,7 @@ function ImageBox({ url, alt }: { url: string | null; alt: string }) {
   return (
     <div className="flex min-h-[200px] items-center justify-center overflow-hidden bg-ink-0">
       {url ? (
-        // eslint-disable-next-line @next/next/no-img-element
+         
         <img src={url} alt={alt} className="max-h-[260px] w-full object-contain" />
       ) : (
         <span className="t-eyebrow">not available</span>

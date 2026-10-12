@@ -22,8 +22,8 @@ export function CalibrationPanel({ status, intervalDays }: { status: Calibration
     );
   }
   return (
-    <Panel eyebrow="Calibration status" title={status.stripProductName} flush actions={<Link href="/calibration" className="t-mono text-[11px] uppercase tracking-[0.1em] text-fg-3 hover:text-signal">Open</Link>}>
-      <table className="table-instrument">
+    <Panel eyebrow="Calibration status" title={status.stripProductName} flush actions={<Link href="/calibration" className="t-mono text-[11px] uppercase tracking-[0.1em] text-fg-3 hover:text-[var(--lux-gold)]">Open</Link>}>
+      <table className="table-instrument ws-compact">
         <thead>
           <tr>
             <th>Analyte</th>
@@ -38,16 +38,16 @@ export function CalibrationPanel({ status, intervalDays }: { status: Calibration
             const meta = CAL_STATUS[a.status];
             return (
               <tr key={a.analyteKey}>
-                <td className="text-fg">
+                <td className="whitespace-nowrap text-fg">
                   <span className="t-mono mr-2 text-[10.5px] text-fg-4">{def?.short ?? a.analyteKey}</span>
                   {def?.label ?? a.analyteKey}
                 </td>
                 <td>
-                  <Chip tone={meta.tone} title={a.model ? `${a.model.id} v${a.model.version}` : "No model"}>
+                  <Chip tone={meta.tone} className="px-1.5 tracking-[0.05em]" title={a.model ? `${a.model.id} v${a.model.version}` : "No model"}>
                     {meta.label}
                   </Chip>
                 </td>
-                <td className="t-mono text-right text-[12px]">{a.ageDays === null ? "—" : `${a.ageDays} d`}</td>
+                <td className="t-mono whitespace-nowrap text-right text-[12px]">{a.ageDays === null ? "—" : `${a.ageDays} d`}</td>
                 <td className="t-mono text-[11px] uppercase tracking-[0.08em]">{a.recalibrationDue ? <span className="text-notice">due</span> : a.model ? <span className="text-fg-4">ok</span> : <span className="text-fg-4">—</span>}</td>
               </tr>
             );

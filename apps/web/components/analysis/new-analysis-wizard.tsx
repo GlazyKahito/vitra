@@ -74,21 +74,24 @@ export function NewAnalysisWizard({ operatorLabel, samples, stripProducts, sugge
   const [mode, setMode] = useState<Mode>("research");
 
   // B. timer (persisted)
-  const [draftId] = useState<string>(() => {
-    if (typeof window === "undefined") return "ssr";
+  // The draft id comes from sessionStorage, so it is only known in the browser: render a
+  // placeholder on the server and the first client pass, then fill it in (no hydration mismatch).
+  const [draftId, setDraftId] = useState<string>("pending");
+  useEffect(() => {
     try {
       const existing = window.sessionStorage.getItem("vitra.draft");
-      if (existing) return existing;
+      if (existing) return setDraftId(existing);
       const id = newDraftId();
       window.sessionStorage.setItem("vitra.draft", id);
-      return id;
+      setDraftId(id);
     } catch {
-      return newDraftId();
+      setDraftId(newDraftId());
     }
-  });
+  }, []);
   const reactionDefault = product?.reactionSeconds ?? DEFAULT_REACTION_SECONDS;
   const [timer, setTimer] = useState<ReactionTimerState>(() => ({ seconds: reactionDefault, startedAt: null, completed: false, untimed: false }));
   useEffect(() => {
+    if (draftId === "pending") return;
     setTimer(loadTimerState(draftId, reactionDefault));
   }, [draftId, reactionDefault]);
   const onTimerChange = useCallback((t: ReactionTimerState) => setTimer(t), []);
@@ -113,7 +116,7 @@ export function NewAnalysisWizard({ operatorLabel, samples, stripProducts, sugge
         const file = await bakeRotation(image);
         const fd = new FormData();
         // Field names follow app/actions/analysis.ts: sampleId | sampleCode (+ subjectPseudonym), synthetic.
-        // The action has no metadata-notes field; notes are sent as `notes` for forward compatibility.
+        // Notes for a new sample are persisted by the action as samples.metadata.notes.
         if (sampleChoice === "existing") fd.set("sampleId", sampleId);
         else {
           fd.set("sampleCode", newCode.trim());

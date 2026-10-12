@@ -1,0 +1,6 @@
+# Test-only extras: pip install -r requirements-dev.txt
+-r requirements.txt
+# starlette.testclient (tests/test_app.py) needs an HTTP client: starlette >= 1.0 imports httpx2,
+# older releases import httpx. Both are listed so either starlette line works.
+httpx2
+httpx

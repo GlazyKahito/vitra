@@ -15,3 +15,4 @@ export { ProgressRing, type ProgressRingProps } from "./progress-ring";
 export { Skeleton, SkeletonText } from "./skeleton";
 export { ToastProvider, useToast, type ToastInput, type ToastTone } from "./toast";
 export { SegmentedControl, type SegmentedControlProps, type SegmentedOption } from "./segmented-control";
+export { CountValue, type CountValueProps } from "./count-value";

@@ -21,7 +21,7 @@ export function RunTable({ items, showQuality = false, emptyMessage = "No runs m
   }
   return (
     <div className="overflow-x-auto">
-      <table className="table-instrument">
+      <table className="table-instrument ws-compact">
         <thead>
           <tr>
             <th>Run</th>
@@ -38,26 +38,26 @@ export function RunTable({ items, showQuality = false, emptyMessage = "No runs m
         <tbody>
           {items.map(({ run, sample, device, resultSummary, latestReview }) => (
             <tr key={run.id}>
-              <td>
+              <td className="[&>a]:whitespace-nowrap">
                 <Link href={`/analysis/${run.id}`} className="t-mono text-[12.5px] text-fg hover:text-signal">
                   {run.runCode}
                 </Link>
                 {run.synthetic ? <SyntheticTag className="ml-2" /> : null}
               </td>
-              <td>
+              <td className="[&>a]:whitespace-nowrap">
                 <Link href={`/samples/${sample.id}`} className="t-mono text-[12.5px] hover:text-signal">
                   {sample.sampleCode}
                 </Link>
                 {sample.subjectPseudonym ? <span className="ml-2 text-[11.5px] text-fg-4">{sample.subjectPseudonym}</span> : null}
               </td>
-              <td>
+              <td className="whitespace-nowrap">
                 <ModeTag mode={run.mode} />
               </td>
-              <td className="text-[12.5px]">
+              <td className="min-w-[96px] text-[12.5px]">
                 {SOURCE_LABEL[run.imageSource] ?? run.imageSource}
                 {device ? <span className="ml-1.5 text-fg-4">{device.simulated ? "(simulated)" : device.name}</span> : null}
               </td>
-              <td>
+              <td className="whitespace-nowrap">
                 <RunStatusChip status={run.status} />
               </td>
               {showQuality ? (
@@ -65,10 +65,10 @@ export function RunTable({ items, showQuality = false, emptyMessage = "No runs m
                   {run.qualityPassed === null || run.qualityPassed === undefined ? <span className="text-fg-4">—</span> : run.qualityPassed ? <span className="text-fg-2">passed</span> : <span className="text-fault">failed</span>}
                 </td>
               ) : null}
-              <td>
+              <td className="min-w-[184px]">
                 <ResultSummaryChips entries={resultSummary} />
               </td>
-              <td className="text-[12.5px]">
+              <td className="min-w-[120px] text-[12.5px]">
                 {latestReview ? (
                   <span title={`${latestReview.decision} · ${formatDateTime(latestReview.createdAt)}`}>
                     {latestReview.reviewerLabel}

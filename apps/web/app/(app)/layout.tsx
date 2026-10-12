@@ -2,10 +2,16 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/auth";
+import { logoutAction } from "@/lib/auth/actions";
+import { isEphemeralDemo } from "@/lib/runtime-mode";
+import { EphemeralDemoProvider } from "@/components/shell/demo-mode";
+import { WorkspaceChrome } from "@/components/shell/workspace-chrome";
 
 /**
- * Authenticated app segment. Every page below wraps itself in <AppShell> so it
- * can set its own title/eyebrow/actions; this layout only guards the session.
+ * Authenticated app segment. Guards the session and renders the persistent
+ * workspace chrome (rail, top bar, quick-jump, honesty footer) once, so it
+ * survives navigation. Each page wraps its own content in <AppShell> to set
+ * the eyebrow / serif title / actions.
  */
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
@@ -20,5 +26,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     }
     redirect(`/login?next=${encodeURIComponent(next)}`);
   }
-  return <>{children}</>;
+  return (
+    <EphemeralDemoProvider value={isEphemeralDemo()}>
+      <WorkspaceChrome user={{ displayName: user.displayName, roleKey: user.roleKey }} onLogout={logoutAction}>
+        {children}
+      </WorkspaceChrome>
+    </EphemeralDemoProvider>
+  );
 }

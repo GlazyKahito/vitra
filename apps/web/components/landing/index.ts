@@ -1,6 +1,4 @@
 export { Chapter, ChapterHeadline, ChapterCopy, type ChapterProps } from "./chapter";
-export { IntroBar } from "./intro-bar";
-export { Hero } from "./hero";
 export { Problem } from "./problem";
 export { Instrument } from "./instrument";
 export { Pipeline } from "./pipeline";

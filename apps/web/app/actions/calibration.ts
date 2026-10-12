@@ -79,9 +79,13 @@ const trainSchema = z.object({
   featureSet: z.enum(["rgb30", "pad_rgb", "lab30"]).default("rgb30"),
   testFraction: z.coerce.number().min(0.1).max(0.5).default(0.25),
   seed: z.coerce.number().int().min(0).default(42),
+  // Optional overrides from the form. Version doubles as the CV service model id, so it is restricted to
+  // the characters the service keeps verbatim ([A-Za-z0-9._-]).
+  version: z.string().trim().regex(/^[A-Za-z0-9._-]{1,80}$/, "version may only contain letters, digits, '.', '_' and '-'").optional(),
+  padIndex: z.coerce.number().int().min(0).max(31).optional(),
 });
 
-/** trainModelAction(formData): datasetId, analyteKey, modelType?, featureSet?, testFraction?, seed? */
+/** trainModelAction(formData): datasetId, analyteKey, modelType?, featureSet?, testFraction?, seed?, version?, padIndex? */
 export async function trainModelAction(formData: FormData): Promise<ActionResult<{ modelId: string; warning: string | null }>> {
   try {
     const user = await requireUser("calibration.manage");
@@ -92,6 +96,8 @@ export async function trainModelAction(formData: FormData): Promise<ActionResult
       featureSet: str(formData, "featureSet") || undefined,
       testFraction: str(formData, "testFraction") || undefined,
       seed: str(formData, "seed") || undefined,
+      version: str(formData, "version")?.trim() || undefined,
+      padIndex: str(formData, "padIndex")?.trim() || undefined,
     });
     if (!parsed.success) return { ok: false, error: zodMessage(parsed.error) };
     const d = parsed.data;
@@ -100,11 +106,24 @@ export async function trainModelAction(formData: FormData): Promise<ActionResult
     if (!ds.csvText) return { ok: false, error: "Dataset CSV is missing from storage." };
     const product = await getStripProduct(ds.stripProductId);
     if (!product) return { ok: false, error: "Strip product for dataset not found." };
-    const padIndex = product.padMap.indexOf(d.analyteKey);
+    // padIndex: an explicit form value wins (must be inside the product's pad count); otherwise the analyte's
+    // position in the pad map.
+    if (d.padIndex !== undefined && d.padIndex >= product.padCount) return { ok: false, error: `padIndex must be between 0 and ${product.padCount - 1}.` };
+    const padIndex = d.padIndex ?? product.padMap.indexOf(d.analyteKey);
     if (d.featureSet === "pad_rgb" && padIndex < 0) return { ok: false, error: "Analyte is not on this strip product's pad map." };
 
     const existing = await listModels({ analyteKey: d.analyteKey, stripProductId: product.id });
-    const version = `${d.analyteKey}-${d.modelType.replace(/_ridge$/, "")}-v${existing.length + 1}`;
+    // version: an explicit form value wins; otherwise derive the next free one. Versions are also CV model
+    // ids, so a clash with an existing model would overwrite it in the CV model store: reject that.
+    const taken = new Set(existing.flatMap((m) => [m.model.version, m.model.id]));
+    let version = d.version;
+    if (!version) {
+      const stem = `${d.analyteKey}-${d.modelType.replace(/_ridge$/, "")}-${d.featureSet}`;
+      let n = 1;
+      while (taken.has(`${stem}-v${n}`)) n++;
+      version = `${stem}-v${n}`;
+    }
+    if (taken.has(version)) return { ok: false, error: `A model with version "${version}" already exists for this analyte and strip product. Choose another version.` };
     const def = ANALYTE_BY_KEY[d.analyteKey];
     const out = await train({
       csv_text: ds.csvText,

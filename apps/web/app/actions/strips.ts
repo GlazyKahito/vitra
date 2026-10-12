@@ -24,10 +24,13 @@ const schema = z.object({
   notes: z.string().trim().max(4000).optional(),
 });
 
-/** updateStripProductAction(formData): id, padMap (comma-separated or JSON array), reactionSeconds?, geometry (JSON)?, notes? */
+/**
+ * updateStripProductAction(formData): id, padMap (comma-separated or JSON array), reactionSeconds?, geometry (JSON)?, notes?
+ * Gated on calibration.manage so researchers (not only admins) can maintain pad maps.
+ */
 export async function updateStripProductAction(formData: FormData): Promise<ActionResult> {
   try {
-    const user = await requireUser("settings.manage");
+    const user = await requireUser("calibration.manage");
     const padMapRaw = str(formData, "padMap");
     let padMap: unknown;
     if (padMapRaw && padMapRaw.trim()) {

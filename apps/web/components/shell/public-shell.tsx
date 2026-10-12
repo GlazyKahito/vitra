@@ -59,7 +59,7 @@ export function PublicFooter() {
           <div className="mt-1">Research prototype. Not a medical device. Not clinically validated.</div>
         </div>
         <div className="flex items-center gap-5">
-          <span className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-fg-4">Reel 01</span>
+          <span className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-fg-4">KJS-HC-03</span>
           <Timecode />
         </div>
       </div>
